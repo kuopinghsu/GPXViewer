@@ -15,7 +15,9 @@ const appState = {
 const METERS_PER_KM = 1000;
 const MS_PER_HOUR = 3600000;
 
-const SETTINGS = {
+const COORD_EPSILON = 1e-7; // ~1 cm precision
+
+let settings = {
   maxAllowedSpeedKmh: 30,
   stationaryRadiusMeters: 20,
   longGapMeters: 100,
@@ -25,22 +27,26 @@ const SETTINGS = {
   flightSpeedKmh: 250
 };
 
-const fileInput = document.getElementById('fileInput');
-const exportBtn = document.getElementById('exportBtn');
+const fileInputEl = document.getElementById('fileInput');
+const exportBtnEl = document.getElementById('exportBtn');
 const statsEl = document.getElementById('stats');
 const pointInfoEl = document.getElementById('pointInfo');
 const logEl = document.getElementById('log');
 const statusBarEl = document.getElementById('statusBar');
 const pointContextMenuEl = document.getElementById('pointContextMenu');
-const removePointBtn = document.getElementById('removePointBtn');
-const settingsBtn = document.getElementById('settingsBtn');
-const aboutBtn = document.getElementById('aboutBtn');
+const removePointBtnEl = document.getElementById('removePointBtn');
+const settingsBtnEl = document.getElementById('settingsBtn');
+const aboutBtnEl = document.getElementById('aboutBtn');
 const settingsDialogEl = document.getElementById('settingsDialog');
 const aboutDialogEl = document.getElementById('aboutDialog');
-const settingsCloseBtn = document.getElementById('settingsCloseBtn');
-const settingsCancelBtn = document.getElementById('settingsCancelBtn');
-const settingsSaveBtn = document.getElementById('settingsSaveBtn');
-const aboutCloseBtn = document.getElementById('aboutCloseBtn');
+const settingsCloseBtnEl = document.getElementById('settingsCloseBtn');
+const settingsCancelBtnEl = document.getElementById('settingsCancelBtn');
+const settingsSaveBtnEl = document.getElementById('settingsSaveBtn');
+const aboutCloseBtnEl = document.getElementById('aboutCloseBtn');
+const mapEmptyStateEl = document.getElementById('mapEmptyState');
+const panelCollapseBtnEl = document.getElementById('panelCollapseBtn');
+const copyMapBtnEl = document.getElementById('copyMapBtn');
+const mapWrapEl = document.querySelector('.map-wrap');
 const settingMaxAllowedSpeedKmhEl = document.getElementById('settingMaxAllowedSpeedKmh');
 const settingStationaryRadiusMetersEl = document.getElementById('settingStationaryRadiusMeters');
 const settingLongGapMetersEl = document.getElementById('settingLongGapMeters');
@@ -56,7 +62,8 @@ function initMap() {
   appState.map = L.map('map', { preferCanvas: true }).setView([25.03, 121.56], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+    attribution: '&copy; OpenStreetMap contributors',
+    crossOrigin: 'anonymous'
   }).addTo(appState.map);
 
   appState.layers.track = L.layerGroup().addTo(appState.map);
@@ -65,7 +72,7 @@ function initMap() {
 }
 
 function wireEvents() {
-  fileInput.addEventListener('change', async (event) => {
+  fileInputEl.addEventListener('change', async (event) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -73,41 +80,41 @@ function wireEvents() {
     await handleImport(file);
   });
 
-  exportBtn.addEventListener('click', () => {
+  exportBtnEl.addEventListener('click', () => {
     if (!appState.optimizedPoints.length) {
       return;
     }
     exportGpx(appState.optimizedPoints, appState.fileName);
   });
 
-  removePointBtn.addEventListener('click', () => {
+  removePointBtnEl.addEventListener('click', () => {
     removePointFromTrack(appState.contextMenuPointIndex);
     hidePointContextMenu();
   });
 
-  settingsBtn.addEventListener('click', () => {
+  settingsBtnEl.addEventListener('click', () => {
     populateSettingsForm();
     openDialog(settingsDialogEl);
   });
 
-  aboutBtn.addEventListener('click', () => {
+  aboutBtnEl.addEventListener('click', () => {
     openDialog(aboutDialogEl);
   });
 
-  settingsCloseBtn.addEventListener('click', () => {
+  settingsCloseBtnEl.addEventListener('click', () => {
     closeDialog(settingsDialogEl);
   });
 
-  settingsCancelBtn.addEventListener('click', () => {
+  settingsCancelBtnEl.addEventListener('click', () => {
     closeDialog(settingsDialogEl);
   });
 
-  settingsSaveBtn.addEventListener('click', () => {
+  settingsSaveBtnEl.addEventListener('click', () => {
     saveSettingsFromForm();
   });
 
-  if (aboutCloseBtn) {
-    aboutCloseBtn.addEventListener('click', () => {
+  if (aboutCloseBtnEl) {
+    aboutCloseBtnEl.addEventListener('click', () => {
       closeDialog(aboutDialogEl);
     });
   }
@@ -129,7 +136,42 @@ function wireEvents() {
       closeDialog(settingsDialogEl);
       closeDialog(aboutDialogEl);
     }
+    if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
+      event.preventDefault();
+      fileInputEl.click();
+    }
   });
+
+  mapWrapEl.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+    mapWrapEl.classList.add('drag-over');
+  });
+
+  mapWrapEl.addEventListener('dragleave', (event) => {
+    if (!mapWrapEl.contains(event.relatedTarget)) {
+      mapWrapEl.classList.remove('drag-over');
+    }
+  });
+
+  mapWrapEl.addEventListener('drop', async (event) => {
+    event.preventDefault();
+    mapWrapEl.classList.remove('drag-over');
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      await handleImport(file);
+    }
+  });
+
+  panelCollapseBtnEl.addEventListener('click', () => {
+    const panel = panelCollapseBtnEl.parentElement;
+    const collapsing = !panel.classList.contains('collapsed');
+    panel.classList.toggle('collapsed', collapsing);
+    panelCollapseBtnEl.title = collapsing ? 'Expand panel' : 'Collapse panel';
+    panelCollapseBtnEl.setAttribute('aria-label', collapsing ? 'Expand panel' : 'Collapse panel');
+  });
+
+  copyMapBtnEl.addEventListener('click', copyMapToClipboard);
 
   document.addEventListener('click', () => {
     hidePointContextMenu();
@@ -157,13 +199,13 @@ function closeDialog(dialogElement) {
 }
 
 function populateSettingsForm() {
-  settingMaxAllowedSpeedKmhEl.value = SETTINGS.maxAllowedSpeedKmh;
-  settingStationaryRadiusMetersEl.value = SETTINGS.stationaryRadiusMeters;
-  settingLongGapMetersEl.value = SETTINGS.longGapMeters;
-  settingBezierToleranceMetersEl.value = SETTINGS.bezierRedundantToleranceMeters;
-  settingDwellMinHoursEl.value = (SETTINGS.dwellMinMs / MS_PER_HOUR).toFixed(2);
-  settingFlightDistanceKmEl.value = SETTINGS.flightDistanceKm;
-  settingFlightSpeedKmhEl.value = SETTINGS.flightSpeedKmh;
+  settingMaxAllowedSpeedKmhEl.value = settings.maxAllowedSpeedKmh;
+  settingStationaryRadiusMetersEl.value = settings.stationaryRadiusMeters;
+  settingLongGapMetersEl.value = settings.longGapMeters;
+  settingBezierToleranceMetersEl.value = settings.bezierRedundantToleranceMeters;
+  settingDwellMinHoursEl.value = (settings.dwellMinMs / MS_PER_HOUR).toFixed(2);
+  settingFlightDistanceKmEl.value = settings.flightDistanceKm;
+  settingFlightSpeedKmhEl.value = settings.flightSpeedKmh;
 }
 
 function saveSettingsFromForm() {
@@ -179,11 +221,11 @@ function saveSettingsFromForm() {
 
   const invalid = Object.values(nextSettings).some((value) => !Number.isFinite(value) || value <= 0);
   if (invalid) {
-    log('Invalid settings values. Please use numbers greater than 0.');
+    setStatus('Invalid settings values. Please use numbers greater than 0.');
     return;
   }
 
-  Object.assign(SETTINGS, nextSettings);
+  settings = { ...settings, ...nextSettings };
   closeDialog(settingsDialogEl);
 
   if (appState.rawPoints.length >= 2) {
@@ -192,17 +234,17 @@ function saveSettingsFromForm() {
       appState.optimizedPoints = optimized;
       renderTrack(optimized, { preserveView: true });
       renderStats(appState.rawPoints, optimized);
-      log('Settings saved and track re-optimized.');
+      setStatus('Settings saved and track re-optimized.');
       return;
     }
   }
 
-  log('Settings saved.');
+  setStatus('Settings saved.');
 }
 
 async function handleImport(file) {
   try {
-    log(`Loading ${file.name}...`);
+    setStatus(`Loading ${file.name}...`);
     const text = await file.text();
     const ext = file.name.toLowerCase().split('.').pop();
 
@@ -232,11 +274,14 @@ async function handleImport(file) {
     renderTrack(optimized, { centerOnFirst: true });
     renderStats(rawPoints, optimized);
 
-    exportBtn.disabled = false;
-    log(`Imported ${rawPoints.length} points, optimized to ${optimized.length} points.`);
+    if (mapEmptyStateEl) {
+      mapEmptyStateEl.hidden = true;
+    }
+    exportBtnEl.disabled = false;
+    setStatus(`Imported ${rawPoints.length} points, optimized to ${optimized.length} points.`);
   } catch (error) {
-    log(`Error: ${error.message}`);
-    exportBtn.disabled = true;
+    setStatus(`Error: ${error.message}`);
+    exportBtnEl.disabled = true;
   }
 }
 
@@ -254,26 +299,24 @@ function parsePolarstepsJson(jsonText) {
   }
 
   const firstValidTime = records.find((record) => record.time instanceof Date && !Number.isNaN(record.time.getTime()))?.time;
-  let previousTime = firstValidTime ?? new Date();
 
   const points = records
-    .map((record, index) => {
+    .reduce((acc, record, index) => {
       const lat = Number(record.lat);
       const lon = Number(record.lon);
       const ele = Number(record.ele ?? 0);
 
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-        return null;
+        return acc;
       }
 
+      const previousTime = acc.length > 0 ? acc[acc.length - 1].time : (firstValidTime ?? new Date());
       const time =
         record.time instanceof Date && !Number.isNaN(record.time.getTime())
           ? record.time
           : new Date(previousTime.getTime() + 60000);
 
-      previousTime = time;
-
-      return {
+      acc.push({
         id: index,
         lat,
         lon,
@@ -282,9 +325,9 @@ function parsePolarstepsJson(jsonText) {
         isDwell: false,
         dwellMs: 0,
         speedKmh: 0
-      };
-    })
-    .filter(Boolean)
+      });
+      return acc;
+    }, [])
     .sort((a, b) => a.time - b.time);
 
   return dedupeByTimeAndLocation(points);
@@ -320,6 +363,7 @@ function extractCoordinateRecords(input) {
         dedupe.add(key);
         records.push(record);
       }
+      continue;
     }
 
     Object.values(current).forEach((value) => {
@@ -538,7 +582,7 @@ function parseKml(xmlText) {
     throw new Error('KML does not contain a Track or LineString coordinates.');
   }
 
-  const baseTime = Date.now();
+  // KML LineString has no timestamps; assign synthetic 1-minute intervals from epoch 0
   return coordinateBlock.textContent
     .trim()
     .split(/\s+/)
@@ -555,7 +599,7 @@ function parseKml(xmlText) {
         lat,
         lon,
         ele,
-        time: new Date(baseTime + index * 60000),
+        time: new Date(index * 60000),
         isDwell: false,
         dwellMs: 0,
         speedKmh: 0
@@ -599,7 +643,7 @@ function removeRedundantPointsByBezier(points) {
     const fittedMid = cubicBezierPoint(prev, control1, control2, next, 0.5);
     const deviationMeters = haversineMeters(curr, fittedMid);
 
-    if (deviationMeters > SETTINGS.bezierRedundantToleranceMeters) {
+    if (deviationMeters > settings.bezierRedundantToleranceMeters) {
       kept.push(curr);
     }
   }
@@ -636,9 +680,9 @@ function removeIllegalSpeedPoints(points) {
 
     const distanceMeters = haversineMeters(prev, candidate);
     const speedKmh = haversineKm(prev, candidate) / dtHours;
-    const isLongDistanceMovement = distanceMeters > SETTINGS.longGapMeters;
+    const isLongDistanceMovement = distanceMeters > settings.longGapMeters;
 
-    if (speedKmh <= SETTINGS.maxAllowedSpeedKmh || isLongDistanceMovement) {
+    if (speedKmh <= settings.maxAllowedSpeedKmh || isLongDistanceMovement) {
       result.push(candidate);
     }
   }
@@ -669,7 +713,7 @@ function reduceStationaryPoints(points) {
 
       let fitsCircle = true;
       for (let k = i; k <= j; k += 1) {
-        if (haversineMeters(points[k], centroid) > SETTINGS.stationaryRadiusMeters) {
+        if (haversineMeters(points[k], centroid) > settings.stationaryRadiusMeters) {
           fitsCircle = false;
           break;
         }
@@ -691,8 +735,8 @@ function reduceStationaryPoints(points) {
 
       output.push({
         ...centerPoint,
-        isDwell: duration >= SETTINGS.dwellMinMs,
-        dwellMs: duration >= SETTINGS.dwellMinMs ? duration : 0
+        isDwell: duration >= settings.dwellMinMs,
+        dwellMs: duration >= settings.dwellMinMs ? duration : 0
       });
 
       i = j;
@@ -750,7 +794,7 @@ function insertBezierPointsForLongGaps(points) {
     const end = points[i];
     const segmentDistanceMeters = haversineMeters(start, end);
 
-    if (segmentDistanceMeters > SETTINGS.longGapMeters) {
+    if (segmentDistanceMeters > settings.longGapMeters) {
       const prev = i - 2 >= 0 ? points[i - 2] : start;
       const next = i + 1 < points.length ? points[i + 1] : end;
       const bezierPoint = buildBezierMidPoint(prev, start, end, next, i);
@@ -763,7 +807,7 @@ function insertBezierPointsForLongGaps(points) {
   return dedupeByTimeAndLocation(output);
 }
 
-function buildBezierMidPoint(prev, start, end, next, indexSeed) {
+function buildBezierMidPoint(prev, start, end, next, segmentIndex) {
   const control = {
     lat: start.lat + 0.25 * (next.lat - prev.lat),
     lon: start.lon + 0.25 * (next.lon - prev.lon)
@@ -779,7 +823,7 @@ function buildBezierMidPoint(prev, start, end, next, indexSeed) {
   const time = new Date((start.time.getTime() + end.time.getTime()) / 2);
 
   return {
-    id: `bezier-${indexSeed}-${start.time.getTime()}-${end.time.getTime()}`,
+    id: `bezier-${segmentIndex}-${start.time.getTime()}-${end.time.getTime()}`,
     lat,
     lon,
     ele: (eleStart + eleEnd) / 2,
@@ -797,8 +841,8 @@ function dedupeByTimeAndLocation(points) {
     if (
       last &&
       last.time.getTime() === point.time.getTime() &&
-      Math.abs(last.lat - point.lat) < 0.0000001 &&
-      Math.abs(last.lon - point.lon) < 0.0000001
+      Math.abs(last.lat - point.lat) < COORD_EPSILON &&
+      Math.abs(last.lon - point.lon) < COORD_EPSILON
     ) {
       continue;
     }
@@ -840,6 +884,14 @@ function renderTrack(points, options = {}) {
     insertPointOnNearestSegment(event.latlng);
   });
 
+  trackLine.on('mouseover', () => {
+    appState.map.getContainer().style.cursor = 'crosshair';
+  });
+
+  trackLine.on('mouseout', () => {
+    appState.map.getContainer().style.cursor = '';
+  });
+
   const movementSegments = classifyMovementSegments(points);
 
   points.forEach((point, index) => {
@@ -858,7 +910,7 @@ function renderTrack(points, options = {}) {
 
     marker.on('click', () => {
       hidePointContextMenu();
-      setSelectedMarker(marker, point);
+      selectMarker(marker, point);
       showPointInfo(point, index, movementSegments);
     });
 
@@ -936,7 +988,7 @@ function insertPointOnNearestSegment(targetLatLng) {
   appState.optimizedPoints = reAnnotated;
   renderTrack(reAnnotated, { preserveView: true });
   renderStats(appState.rawPoints.length ? appState.rawPoints : reAnnotated, reAnnotated);
-  log(`Point inserted between ${segmentIndex} and ${segmentIndex + 1}.`);
+  setStatus(`Point inserted between ${segmentIndex} and ${segmentIndex + 1}.`);
 }
 
 function movePointInTrack(index, latlng) {
@@ -960,7 +1012,7 @@ function movePointInTrack(index, latlng) {
   renderTrack(reAnnotated, { preserveView: true });
   renderStats(appState.rawPoints.length ? appState.rawPoints : reAnnotated, reAnnotated);
   pointInfoEl.textContent = 'Point moved. Click a point on map to see GPS details.';
-  log(`Point ${index} moved.`);
+  setStatus(`Point ${index} moved.`);
 }
 
 function findNearestSegmentIndex(points, targetLatLng) {
@@ -1045,7 +1097,7 @@ function removePointFromTrack(index) {
   }
 
   if (appState.optimizedPoints.length <= 2) {
-    log('Cannot remove point: at least 2 points are required.');
+    setStatus('Cannot remove point: at least 2 points are required.');
     return;
   }
 
@@ -1056,7 +1108,7 @@ function removePointFromTrack(index) {
   renderTrack(reAnnotated, { preserveView: true });
   renderStats(appState.rawPoints.length ? appState.rawPoints : reAnnotated, reAnnotated);
   pointInfoEl.textContent = 'Point removed. Click a point on map to see GPS details.';
-  log(`Point ${index} removed.`);
+  setStatus(`Point ${index} removed.`);
 }
 
 function classifyMovementSegments(points) {
@@ -1067,7 +1119,7 @@ function classifyMovementSegments(points) {
     const distanceKm = haversineKm(start, end);
     const dtHours = (end.time - start.time) / MS_PER_HOUR;
     const speed = dtHours > 0 ? distanceKm / dtHours : 0;
-    if (distanceKm >= SETTINGS.flightDistanceKm || speed >= SETTINGS.flightSpeedKmh) {
+    if (distanceKm >= settings.flightDistanceKm || speed >= settings.flightSpeedKmh) {
       segments.push({
         start,
         end,
@@ -1095,7 +1147,7 @@ function showPointInfo(point, index, movementSegments) {
   ].join('');
 }
 
-function setSelectedMarker(marker, point) {
+function selectMarker(marker, point) {
   if (appState.selectedMarker) {
     const oldNode = appState.selectedMarker.getElement()?.firstChild;
     if (oldNode) {
@@ -1118,25 +1170,27 @@ function renderStats(rawPoints, optimizedPoints) {
   const maxSpeed = optimizedPoints.reduce((max, p) => Math.max(max, p.speedKmh || 0), 0);
   const dwellCount = optimizedPoints.filter((p) => p.isDwell).length;
 
+  const row = (label, value) =>
+    `<div class="stat-row"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
+
   statsEl.innerHTML = [
-    `<div><strong>Raw points:</strong> ${rawPoints.length}</div>`,
-    `<div><strong>Optimized points:</strong> ${optimizedPoints.length}</div>`,
-    `<div><strong>Distance:</strong> ${totalDistanceKm.toFixed(2)} km</div>`,
-    `<div><strong>Duration:</strong> ${formatDuration(durationMs)}</div>`,
-    `<div><strong>Avg speed:</strong> ${avgSpeed.toFixed(2)} km/h</div>`,
-    `<div><strong>Max speed:</strong> ${maxSpeed.toFixed(2)} km/h</div>`,
-    `<div><strong>Stay > 1hr:</strong> ${dwellCount}</div>`
+    row('Raw points', rawPoints.length),
+    row('Optimized points', optimizedPoints.length),
+    row('Distance', `${totalDistanceKm.toFixed(2)} km`),
+    row('Duration', formatDuration(durationMs)),
+    row('Avg speed', `${avgSpeed.toFixed(2)} km/h`),
+    row('Max speed', `${maxSpeed.toFixed(2)} km/h`),
+    row(`Stay > ${(settings.dwellMinMs / MS_PER_HOUR).toFixed(1)}hr`, dwellCount)
   ].join('');
+}
+
+function serializeTrkpt(p) {
+  return `      <trkpt lat="${p.lat}" lon="${p.lon}">\n        <ele>${Number(p.ele || 0)}</ele>\n        <time>${p.time.toISOString()}</time>\n      </trkpt>`;
 }
 
 function exportGpx(points, sourceFileName) {
   const safeName = sourceFileName.replace(/\.[^.]+$/, '');
-  const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="GPXViewer" xmlns="http://www.topografix.com/GPX/1/1">\n  <trk>\n    <name>${escapeXml(safeName)}-optimized</name>\n    <trkseg>\n${points
-    .map(
-      (p) =>
-        `      <trkpt lat="${p.lat}" lon="${p.lon}">\n        <ele>${Number(p.ele || 0)}</ele>\n        <time>${p.time.toISOString()}</time>\n      </trkpt>`
-    )
-    .join('\n')}\n    </trkseg>\n  </trk>\n</gpx>`;
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="GPXViewer" xmlns="http://www.topografix.com/GPX/1/1">\n  <trk>\n    <name>${escapeXml(safeName)}-optimized</name>\n    <trkseg>\n${points.map(serializeTrkpt).join('\n')}\n    </trkseg>\n  </trk>\n</gpx>`;
 
   const blob = new Blob([gpx], { type: 'application/gpx+xml' });
   const url = URL.createObjectURL(blob);
@@ -1169,15 +1223,15 @@ function midpoint(a, b) {
 
 function haversineKm(a, b) {
   const R = 6371;
-  const dLat = toRad(b.lat - a.lat);
-  const dLon = toRad(b.lon - a.lon);
-  const lat1 = toRad(a.lat);
-  const lat2 = toRad(b.lat);
+  const dLat = degToRad(b.lat - a.lat);
+  const dLon = degToRad(b.lon - a.lon);
+  const lat1 = degToRad(a.lat);
+  const lat2 = degToRad(b.lat);
 
-  const aa =
+  const sinSqSum =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-  const c = 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
+  const c = 2 * Math.atan2(Math.sqrt(sinSqSum), Math.sqrt(1 - sinSqSum));
   return R * c;
 }
 
@@ -1185,7 +1239,7 @@ function haversineMeters(a, b) {
   return haversineKm(a, b) * METERS_PER_KM;
 }
 
-function toRad(deg) {
+function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
@@ -1218,9 +1272,56 @@ function escapeXml(text) {
     .replace(/'/g, '&apos;');
 }
 
-function log(message) {
-  logEl.textContent = message;
+async function copyMapToClipboard() {
+  const mapContainer = appState.map.getContainer();
+  const canvases = Array.from(mapContainer.querySelectorAll('canvas'));
+
+  if (!canvases.length) {
+    setStatus('Nothing to capture: no map canvas found.');
+    return;
+  }
+
+  const ref = canvases[0];
+  const width = ref.width;
+  const height = ref.height;
+
+  const composite = document.createElement('canvas');
+  composite.width = width;
+  composite.height = height;
+  const ctx = composite.getContext('2d');
+
+  for (const canvas of canvases) {
+    try {
+      ctx.drawImage(canvas, 0, 0, width, height);
+    } catch {
+      // skip tainted layer (should not occur with crossOrigin: 'anonymous')
+    }
+  }
+
+  composite.toBlob(async (blob) => {
+    if (!blob) {
+      setStatus('Map capture failed.');
+      return;
+    }
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      setStatus(`Map view copied to clipboard (${width}×${height}px).`);
+    } catch (err) {
+      setStatus(`Copy failed: ${err.message}`);
+    }
+  }, 'image/png');
+}
+
+function setStatus(message) {
   if (statusBarEl) {
     statusBarEl.textContent = message;
+  }
+  const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.textContent = `${time} — ${message}`;
+  logEl.insertBefore(entry, logEl.firstChild);
+  while (logEl.children.length > 50) {
+    logEl.removeChild(logEl.lastChild);
   }
 }

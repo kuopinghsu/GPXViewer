@@ -20,9 +20,9 @@
         <div class="toolbar-subtitle">Track visualization, cleanup, and editing</div>
       </div>
       <div class="toolbar-controls">
-        <label class="file-label" for="fileInput">Open</label>
+        <label class="file-label" for="fileInput" accesskey="o" title="Open file (Alt+O)">Open</label>
         <input id="fileInput" type="file" accept=".gpx,.kml,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/json,text/xml,application/xml,text/json" />
-        <button id="exportBtn" disabled>Export Optimized GPX</button>
+        <button id="exportBtn" disabled title="Export optimized track as GPX">Export GPX</button>
         <button id="settingsBtn" type="button">Settings</button>
         <button id="aboutBtn" type="button">About</button>
       </div>
@@ -31,9 +31,21 @@
     <div class="main-area">
       <main class="map-wrap">
         <div id="map"></div>
+        <div id="mapEmptyState" class="map-empty-state" aria-hidden="true">
+          <div class="map-empty-icon">
+            <svg viewBox="0 0 32 32" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="30" height="30" rx="6" fill="#1C3A6E"/>
+              <path d="M16 5 L22 14 H18 L20 27 H12 L14 14 H10 Z" fill="#4F8BFF"/>
+              <circle cx="16" cy="9" r="2.2" fill="#FFC107"/>
+            </svg>
+          </div>
+          <div class="map-empty-title">No track loaded</div>
+          <div class="map-empty-body">Drag a file here or click <strong>Open</strong> to import a GPX, KML, or Polarsteps JSON file.</div>
+        </div>
       </main>
 
       <aside class="right-panel">
+        <button id="panelCollapseBtn" class="panel-collapse-btn" type="button" title="Collapse panel" aria-label="Collapse panel"><span class="panel-collapse-chevron">›</span></button>
         <section class="panel-section">
           <div class="panel-header">
             <div class="panel-title">Statistics</div>
@@ -42,7 +54,7 @@
           <div class="stats panel-content" id="stats"></div>
         </section>
 
-        <section class="panel-section">
+        <section class="panel-section point-info-section">
           <div class="panel-header">
             <div class="panel-title">Point Info</div>
             <div class="panel-subtitle">Selected point details</div>
@@ -60,8 +72,9 @@
       </aside>
     </div>
 
-    <footer class="status-bar" id="statusBar">
-      Open a GPX, KML, or Polarsteps JSON file to begin.
+    <footer class="status-bar">
+      <span id="statusBar">Open a GPX, KML, or Polarsteps JSON file to begin.</span>
+      <button id="copyMapBtn" class="status-bar-btn" type="button" title="Copy map view to clipboard">📋 Copy Map</button>
     </footer>
   </div>
 
@@ -82,7 +95,7 @@
         <div class="settings-subtitle">Tune optimization and movement thresholds</div>
         <button id="settingsCloseBtn" type="button" class="dialog-close-btn settings-close">✕</button>
       </div>
-      <div class="about-separator"></div>
+      <div class="dialog-separator"></div>
       <form id="settingsForm" class="dialog-body settings-body">
         <div class="settings-section-title">Track Cleanup</div>
         <div class="settings-grid">
@@ -113,7 +126,7 @@
           </label>
         </div>
       </form>
-      <div class="about-separator"></div>
+      <div class="dialog-separator"></div>
       <div class="dialog-footer">
         <button id="settingsCancelBtn" type="button">Cancel</button>
         <button id="settingsSaveBtn" type="button" class="btn-primary">Save</button>
@@ -153,7 +166,7 @@
         <div class="about-section-title">Optimization</div>
         <div class="about-grid">
           <div class="about-key">Speed filter</div><div class="about-value">Removes high-speed anomalies by threshold</div>
-          <div class="about-key">Cluster reduction</div><div class="about-value">Merges 20m-area points into one center point</div>
+          <div class="about-key">Cluster reduction</div><div class="about-value">Merges nearby stationary points into one center point</div>
           <div class="about-key">Bezier processing</div><div class="about-value">Removes redundant points and fills long gaps</div>
         </div>
       </div>
