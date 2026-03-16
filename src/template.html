@@ -22,7 +22,10 @@
       <div class="toolbar-controls">
         <label class="file-label" for="fileInput" accesskey="o" title="Open file (Alt+O)">Open</label>
         <input id="fileInput" type="file" accept=".gpx,.kml,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/json,text/xml,application/xml,text/json" />
-        <button id="exportBtn" disabled title="Export optimized track as GPX">Export GPX</button>
+        <button id="exportBtn" disabled title="Export edited track as GPX">Export GPX</button>
+        <button id="copyMapBtn" type="button" title="Copy map snapshot to clipboard">📋 Copy Map</button>
+        <button id="undoBtn" type="button" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
+        <button id="redoBtn" type="button" disabled title="Redo (Ctrl+Y)">↪ Redo</button>
         <button id="settingsBtn" type="button">Settings</button>
         <button id="aboutBtn" type="button">About</button>
       </div>
@@ -74,11 +77,11 @@
 
     <footer class="status-bar">
       <span id="statusBar">Open a GPX, KML, or Polarsteps JSON file to begin.</span>
-      <button id="copyMapBtn" class="status-bar-btn" type="button" title="Copy map view to clipboard">📋 Copy Map</button>
     </footer>
   </div>
 
   <div id="pointContextMenu" class="context-menu" hidden>
+    <button id="searchGeminiBtn" type="button">Search on Google</button>
     <button id="removePointBtn" type="button">Remove Point</button>
   </div>
 

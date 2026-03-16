@@ -647,26 +647,8 @@ button:disabled {
   line-height: 20px;
 }
 
+/* ── Tablet / vertical layout (≤ 900px) ── */
 @media (max-width: 900px) {
-  .toolbar-brand {
-    width: 100%;
-  }
-
-  .toolbar {
-    flex-wrap: wrap;
-  }
-
-  .main-area {
-    flex-direction: column;
-  }
-
-  .right-panel {
-    width: 100%;
-    height: 46%;
-    border-left: 0;
-    border-top: 1px solid var(--border);
-  }
-
   .settings-grid {
     grid-template-columns: 1fr;
     padding-left: 0;
@@ -680,5 +662,116 @@ button:disabled {
   .about-grid {
     grid-template-columns: 1fr;
     padding-left: 0;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .toolbar-brand {
+    width: 100%;
+  }
+
+  .main-area {
+    flex-direction: column;
+  }
+
+  .map-wrap {
+    border-right: none;
+  }
+
+  /* Panel becomes a bottom drawer */
+  .right-panel {
+    width: 100%;
+    height: 260px;
+    flex-shrink: 0;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    transition: height 0.25s ease, border-color 0.25s ease;
+  }
+
+  .right-panel.collapsed {
+    width: 100%;
+    height: 28px;
+    border-left-color: var(--border);
+    overflow: hidden;
+  }
+
+  /* Collapse button becomes a full-width horizontal handle */
+  .panel-collapse-btn {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    height: 28px;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    min-height: unset;
+    min-width: unset;
+    background: var(--panel-bg);
+  }
+
+  /* Chevron: down arrow (panel open → click to collapse) */
+  .panel-collapse-chevron {
+    transform: rotate(90deg);
+  }
+
+  /* Chevron: up arrow (panel closed → click to expand) */
+  .right-panel.collapsed .panel-collapse-chevron {
+    transform: rotate(-90deg);
+  }
+}
+
+/* ── Mobile: compact scrollable toolbar (≤ 640px) ── */
+@media (max-width: 640px) {
+  .toolbar {
+    flex-wrap: nowrap;
+    padding: 5px 8px;
+    gap: 0;
+  }
+
+  .toolbar-brand {
+    display: none;
+  }
+
+  .toolbar-controls {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 5px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .toolbar-controls::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── Touch device: larger tap targets & markers ── */
+@media (hover: none) and (pointer: coarse) {
+  .file-label,
+  button {
+    min-height: 36px;
+    padding: 5px 12px;
+  }
+
+  .context-menu button {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .point-marker {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .transport-icon {
+    font-size: 24px;
+    line-height: 24px;
   }
 }

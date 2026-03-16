@@ -7,6 +7,10 @@ const appState = {
   },
   rawPoints: [],
   optimizedPoints: [],
+  pointMarkers: [],
+  movementSegments: [],
+  undoStack: [],
+  redoStack: [],
   selectedMarker: null,
   fileName: '',
   contextMenuPointIndex: -1
@@ -19,7 +23,7 @@ const COORD_EPSILON = 1e-7; // ~1 cm precision
 
 let settings = {
   maxAllowedSpeedKmh: 30,
-  stationaryRadiusMeters: 20,
+  stationaryRadiusMeters: 150,
   longGapMeters: 100,
   bezierRedundantToleranceMeters: 8,
   dwellMinMs: 3600000,
@@ -34,7 +38,10 @@ const pointInfoEl = document.getElementById('pointInfo');
 const logEl = document.getElementById('log');
 const statusBarEl = document.getElementById('statusBar');
 const pointContextMenuEl = document.getElementById('pointContextMenu');
+const searchGeminiBtnEl = document.getElementById('searchGeminiBtn');
 const removePointBtnEl = document.getElementById('removePointBtn');
+const undoBtnEl = document.getElementById('undoBtn');
+const redoBtnEl = document.getElementById('redoBtn');
 const settingsBtnEl = document.getElementById('settingsBtn');
 const aboutBtnEl = document.getElementById('aboutBtn');
 const settingsDialogEl = document.getElementById('settingsDialog');
@@ -55,8 +62,16 @@ const settingDwellMinHoursEl = document.getElementById('settingDwellMinHours');
 const settingFlightDistanceKmEl = document.getElementById('settingFlightDistanceKm');
 const settingFlightSpeedKmhEl = document.getElementById('settingFlightSpeedKmh');
 
+let trackMouseMoveHandler = null;
+
 initMap();
 wireEvents();
+
+// Auto-collapse the side panel on mobile where the layout is vertical
+if (window.matchMedia('(max-width: 900px)').matches) {
+  const rightPanel = panelCollapseBtnEl.parentElement;
+  rightPanel.classList.add('collapsed');
+}
 
 function initMap() {
   appState.map = L.map('map', { preferCanvas: true }).setView([25.03, 121.56], 7);
@@ -69,6 +84,12 @@ function initMap() {
   appState.layers.track = L.layerGroup().addTo(appState.map);
   appState.layers.points = L.layerGroup().addTo(appState.map);
   appState.layers.transport = L.layerGroup().addTo(appState.map);
+
+  appState.map.on('zoomend', () => {
+    if (appState.optimizedPoints.length) {
+      renderPointMarkers(appState.optimizedPoints);
+    }
+  });
 }
 
 function wireEvents() {
@@ -85,6 +106,16 @@ function wireEvents() {
       return;
     }
     exportGpx(appState.optimizedPoints, appState.fileName);
+  });
+
+  searchGeminiBtnEl.addEventListener('click', () => {
+    const idx = appState.contextMenuPointIndex;
+    hidePointContextMenu();
+    if (idx < 0 || idx >= appState.optimizedPoints.length) return;
+    const p = appState.optimizedPoints[idx];
+    const query = encodeURIComponent(`${p.lat.toFixed(6)},${p.lon.toFixed(6)}`);
+    const url = `https://www.google.com/search?q=${query}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   });
 
   removePointBtnEl.addEventListener('click', () => {
@@ -131,6 +162,14 @@ function wireEvents() {
     }
   });
 
+  undoBtnEl.addEventListener('click', () => {
+    undoEdit();
+  });
+
+  redoBtnEl.addEventListener('click', () => {
+    redoEdit();
+  });
+
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeDialog(settingsDialogEl);
@@ -139,6 +178,14 @@ function wireEvents() {
     if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
       event.preventDefault();
       fileInputEl.click();
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+      event.preventDefault();
+      undoEdit();
+    }
+    if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+      event.preventDefault();
+      redoEdit();
     }
   });
 
@@ -232,6 +279,10 @@ function saveSettingsFromForm() {
     const optimized = optimizePoints(appState.rawPoints);
     if (optimized.length >= 2) {
       appState.optimizedPoints = optimized;
+      appState.undoStack = [];
+      appState.redoStack = [];
+      undoBtnEl.disabled = true;
+      redoBtnEl.disabled = true;
       renderTrack(optimized, { preserveView: true });
       renderStats(appState.rawPoints, optimized);
       setStatus('Settings saved and track re-optimized.');
@@ -249,8 +300,11 @@ async function handleImport(file) {
     const ext = file.name.toLowerCase().split('.').pop();
 
     let rawPoints;
+    let skipOptimize = false;
     if (ext === 'gpx') {
-      rawPoints = parseGpx(text);
+      const parsed = parseGpx(text);
+      rawPoints = parsed.points;
+      skipOptimize = parsed.creator === 'GPXViewer';
     } else if (ext === 'kml') {
       rawPoints = parseKml(text);
     } else if (ext === 'json') {
@@ -263,13 +317,15 @@ async function handleImport(file) {
       throw new Error('Track must contain at least 2 points.');
     }
 
-    const optimized = optimizePoints(rawPoints);
+    const optimized = skipOptimize ? annotateSpeed(rawPoints) : optimizePoints(rawPoints);
     if (optimized.length < 2) {
       throw new Error('Optimization removed too many points; unable to render track.');
     }
 
     appState.rawPoints = rawPoints;
     appState.optimizedPoints = optimized;
+    appState.undoStack = [];
+    appState.redoStack = [];
     appState.fileName = file.name;
     renderTrack(optimized, { centerOnFirst: true });
     renderStats(rawPoints, optimized);
@@ -278,7 +334,9 @@ async function handleImport(file) {
       mapEmptyStateEl.hidden = true;
     }
     exportBtnEl.disabled = false;
-    setStatus(`Imported ${rawPoints.length} points, optimized to ${optimized.length} points.`);
+    undoBtnEl.disabled = true;
+    redoBtnEl.disabled = true;
+    setStatus(`Imported ${rawPoints.length} points${skipOptimize ? '' : `, optimized to ${optimized.length} points`}.`);
   } catch (error) {
     setStatus(`Error: ${error.message}`);
     exportBtnEl.disabled = true;
@@ -515,8 +573,10 @@ function parseGpx(xmlText) {
     throw new Error('Invalid GPX XML.');
   }
 
+  const creator = xml.querySelector('gpx')?.getAttribute('creator') ?? '';
+
   const trkpts = Array.from(xml.querySelectorAll('trkpt'));
-  return trkpts
+  const points = trkpts
     .map((node, index) => {
       const lat = Number(node.getAttribute('lat'));
       const lon = Number(node.getAttribute('lon'));
@@ -539,6 +599,8 @@ function parseGpx(xmlText) {
     })
     .filter(Boolean)
     .sort((a, b) => a.time - b.time);
+
+  return { points, creator };
 }
 
 function parseKml(xmlText) {
@@ -863,38 +925,78 @@ function annotateSpeed(points) {
   });
 }
 
-function renderTrack(points, options = {}) {
-  const { centerOnFirst = false, preserveView = false } = options;
-  const previousCenter = preserveView ? appState.map.getCenter() : null;
-  const previousZoom = preserveView ? appState.map.getZoom() : null;
+function greatCircleArc(p1, p2, numPoints) {
+  const toRad = Math.PI / 180;
+  const toDeg = 180 / Math.PI;
+  const lat1 = p1.lat * toRad;
+  const lon1 = p1.lon * toRad;
+  const lat2 = p2.lat * toRad;
+  const lon2 = p2.lon * toRad;
+  const d = 2 * Math.asin(Math.sqrt(
+    Math.sin((lat2 - lat1) / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin((lon2 - lon1) / 2) ** 2
+  ));
+  if (d < 1e-8) return [[p1.lat, p1.lon], [p2.lat, p2.lon]];
+  const result = [];
+  for (let i = 0; i <= numPoints; i++) {
+    const f = i / numPoints;
+    const A = Math.sin((1 - f) * d) / Math.sin(d);
+    const B = Math.sin(f * d) / Math.sin(d);
+    const x = A * Math.cos(lat1) * Math.cos(lon1) + B * Math.cos(lat2) * Math.cos(lon2);
+    const y = A * Math.cos(lat1) * Math.sin(lon1) + B * Math.cos(lat2) * Math.sin(lon2);
+    const z = A * Math.sin(lat1) + B * Math.sin(lat2);
+    result.push([
+      Math.atan2(z, Math.sqrt(x * x + y * y)) * toDeg,
+      Math.atan2(y, x) * toDeg
+    ]);
+  }
+  return result;
+}
 
-  appState.layers.track.clearLayers();
+function buildTrackRuns(points, flightStartSet) {
+  if (points.length < 2) return [];
+  const runs = [];
+  let nonFlightLatlngs = [[points[0].lat, points[0].lon]];
+  for (let i = 0; i < points.length - 1; i++) {
+    const p = points[i];
+    const next = points[i + 1];
+    if (!flightStartSet.has(p)) {
+      nonFlightLatlngs.push([next.lat, next.lon]);
+    } else {
+      if (nonFlightLatlngs.length >= 2) {
+        runs.push({ isFlight: false, latlngs: nonFlightLatlngs });
+      }
+      runs.push({ isFlight: true, latlngs: greatCircleArc(p, next, 60) });
+      nonFlightLatlngs = [[next.lat, next.lon]];
+    }
+  }
+  if (nonFlightLatlngs.length >= 2) {
+    runs.push({ isFlight: false, latlngs: nonFlightLatlngs });
+  }
+  return runs;
+}
+
+function renderPointMarkers(points) {
   appState.layers.points.clearLayers();
-  appState.layers.transport.clearLayers();
+  appState.pointMarkers = new Array(points.length).fill(null);
+  appState.selectedMarker = null;
 
-  const latlngs = points.map((p) => [p.lat, p.lon]);
-
-  const trackLine = L.polyline(latlngs, {
-    color: '#22c55e',
-    weight: 4,
-    opacity: 0.8
-  }).addTo(appState.layers.track);
-
-  trackLine.on('click', (event) => {
-    insertPointOnNearestSegment(event.latlng);
-  });
-
-  trackLine.on('mouseover', () => {
-    appState.map.getContainer().style.cursor = 'crosshair';
-  });
-
-  trackLine.on('mouseout', () => {
-    appState.map.getContainer().style.cursor = '';
-  });
-
-  const movementSegments = classifyMovementSegments(points);
+  const MIN_GAP_PX = 16;
+  const lastPos = { x: -Infinity, y: -Infinity };
+  const last = points.length - 1;
 
   points.forEach((point, index) => {
+    const pos = appState.map.latLngToContainerPoint([point.lat, point.lon]);
+    const dx = pos.x - lastPos.x;
+    const dy = pos.y - lastPos.y;
+    const farEnough = Math.sqrt(dx * dx + dy * dy) >= MIN_GAP_PX;
+    const isImportant = index === 0 || index === last || point.isDwell;
+
+    if (!farEnough && !isImportant) return;
+
+    lastPos.x = pos.x;
+    lastPos.y = pos.y;
+
     const size = point.isDwell ? calcDwellSize(point.dwellMs) : 10;
     const classNames = ['point-marker', point.isDwell ? 'dwell-marker' : ''].join(' ').trim();
 
@@ -911,13 +1013,11 @@ function renderTrack(points, options = {}) {
     marker.on('click', () => {
       hidePointContextMenu();
       selectMarker(marker, point);
-      showPointInfo(point, index, movementSegments);
+      showPointInfo(point, index, appState.movementSegments);
     });
 
     marker.on('contextmenu', (event) => {
-      if (event.originalEvent) {
-        event.originalEvent.preventDefault();
-      }
+      if (event.originalEvent) event.originalEvent.preventDefault();
       showPointContextMenu(event, index);
     });
 
@@ -930,8 +1030,130 @@ function renderTrack(points, options = {}) {
       movePointInTrack(index, latlng);
     });
 
+    appState.pointMarkers[index] = marker;
     marker.addTo(appState.layers.points);
   });
+}
+
+function renderTrack(points, options = {}) {
+  const { centerOnFirst = false, preserveView = false } = options;
+  const previousCenter = preserveView ? appState.map.getCenter() : null;
+  const previousZoom = preserveView ? appState.map.getZoom() : null;
+
+  appState.layers.track.clearLayers();
+  appState.layers.points.clearLayers();
+  appState.layers.transport.clearLayers();
+
+  if (trackMouseMoveHandler) {
+    appState.map.off('mousemove', trackMouseMoveHandler);
+    trackMouseMoveHandler = null;
+  }
+
+  const movementSegments = classifyMovementSegments(points);
+  appState.movementSegments = movementSegments;
+  const flightStartSet = new Set(movementSegments.map((s) => s.start));
+  const runs = buildTrackRuns(points, flightStartSet);
+
+  const POINT_PROXIMITY_PX = window.matchMedia('(hover: none) and (pointer: coarse)').matches ? 30 : 20;
+  let nearPoint = false;
+  let onPolyline = false;
+
+  function updateMapCursor() {
+    if (nearPoint) {
+      appState.map.getContainer().style.cursor = 'pointer';
+    } else if (onPolyline) {
+      appState.map.getContainer().style.cursor = 'crosshair';
+    } else {
+      appState.map.getContainer().style.cursor = '';
+    }
+  }
+
+  function findNearestPointInRadius(latlng, radiusPx) {
+    const mousePos = appState.map.latLngToContainerPoint(latlng);
+    const threshold = radiusPx * radiusPx;
+    let nearestIdx = -1;
+    let nearestDist = Infinity;
+    appState.pointMarkers.forEach((marker, i) => {
+      if (!marker) return;
+      const p = appState.optimizedPoints[i];
+      const pos = appState.map.latLngToContainerPoint([p.lat, p.lon]);
+      const dx = mousePos.x - pos.x;
+      const dy = mousePos.y - pos.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= threshold && d2 < nearestDist) {
+        nearestDist = d2;
+        nearestIdx = i;
+      }
+    });
+    return nearestIdx;
+  }
+
+  runs.forEach((run) => {
+    const polylineOptions = {
+      color: '#22c55e',
+      weight: 4,
+      opacity: 0.8
+    };
+    if (run.isFlight) {
+      polylineOptions.dashArray = '12 10';
+    }
+    const trackLine = L.polyline(run.latlngs, polylineOptions).addTo(appState.layers.track);
+
+    trackLine.on('click', (event) => {
+      const nearIdx = findNearestPointInRadius(event.latlng, POINT_PROXIMITY_PX);
+      if (nearIdx >= 0 && appState.pointMarkers[nearIdx]) {
+        hidePointContextMenu();
+        selectMarker(appState.pointMarkers[nearIdx], appState.optimizedPoints[nearIdx]);
+        showPointInfo(appState.optimizedPoints[nearIdx], nearIdx, appState.movementSegments);
+      } else {
+        insertPointOnNearestSegment(event.latlng);
+      }
+    });
+
+    trackLine.on('contextmenu', (event) => {
+      if (event.originalEvent) {
+        event.originalEvent.preventDefault();
+      }
+      const nearIdx = findNearestPointInRadius(event.latlng, POINT_PROXIMITY_PX);
+      if (nearIdx >= 0) {
+        showPointContextMenu(event, nearIdx);
+      }
+    });
+
+    trackLine.on('mouseover', () => {
+      onPolyline = true;
+      updateMapCursor();
+    });
+
+    trackLine.on('mouseout', () => {
+      onPolyline = false;
+      updateMapCursor();
+    });
+  });
+
+  trackMouseMoveHandler = (event) => {
+    const mousePos = appState.map.latLngToContainerPoint(event.latlng);
+    const threshold = POINT_PROXIMITY_PX * POINT_PROXIMITY_PX;
+    nearPoint = appState.pointMarkers.some((marker, i) => {
+      if (!marker) return false;
+      const p = appState.optimizedPoints[i];
+      const pos = appState.map.latLngToContainerPoint([p.lat, p.lon]);
+      const dx = mousePos.x - pos.x;
+      const dy = mousePos.y - pos.y;
+      return dx * dx + dy * dy <= threshold;
+    });
+    updateMapCursor();
+  };
+  appState.map.on('mousemove', trackMouseMoveHandler);
+
+  const firstPoint = points[0];
+  if (centerOnFirst && firstPoint) {
+    appState.map.setView([firstPoint.lat, firstPoint.lon], appState.map.getZoom());
+  } else if (preserveView && previousCenter && Number.isFinite(previousZoom)) {
+    appState.map.setView(previousCenter, previousZoom, { animate: false });
+  }
+
+  renderPointMarkers(points);
 
   movementSegments.forEach((segment) => {
     const mid = midpoint(segment.start, segment.end);
@@ -943,13 +1165,6 @@ function renderTrack(points, options = {}) {
     });
     L.marker([mid.lat, mid.lon], { icon }).addTo(appState.layers.transport);
   });
-
-  const firstPoint = points[0];
-  if (centerOnFirst && firstPoint) {
-    appState.map.setView([firstPoint.lat, firstPoint.lon], appState.map.getZoom());
-  } else if (preserveView && previousCenter && Number.isFinite(previousZoom)) {
-    appState.map.setView(previousCenter, previousZoom, { animate: false });
-  }
 }
 
 function insertPointOnNearestSegment(targetLatLng) {
@@ -981,6 +1196,7 @@ function insertPointOnNearestSegment(targetLatLng) {
     speedKmh: 0
   };
 
+  pushHistory(points.slice());
   const updated = points.slice();
   updated.splice(segmentIndex + 1, 0, insertedPoint);
 
@@ -996,6 +1212,7 @@ function movePointInTrack(index, latlng) {
     return;
   }
 
+  pushHistory(appState.optimizedPoints.slice());
   const updated = appState.optimizedPoints.map((point, pointIndex) => {
     if (pointIndex !== index) {
       return point;
@@ -1072,6 +1289,39 @@ function closestPointOnSegment(point, a, b) {
   };
 }
 
+function pushHistory(snapshot) {
+  appState.undoStack.push(snapshot);
+  appState.redoStack = [];
+  undoBtnEl.disabled = false;
+  redoBtnEl.disabled = true;
+}
+
+function undoEdit() {
+  if (!appState.undoStack.length) return;
+  appState.redoStack.push(appState.optimizedPoints);
+  const snapshot = appState.undoStack.pop();
+  appState.optimizedPoints = snapshot;
+  renderTrack(snapshot, { preserveView: true });
+  renderStats(appState.rawPoints.length ? appState.rawPoints : snapshot, snapshot);
+  pointInfoEl.textContent = 'Undo. Click a point on map to see GPS details.';
+  setStatus('Undo.');
+  undoBtnEl.disabled = appState.undoStack.length === 0;
+  redoBtnEl.disabled = false;
+}
+
+function redoEdit() {
+  if (!appState.redoStack.length) return;
+  appState.undoStack.push(appState.optimizedPoints);
+  const snapshot = appState.redoStack.pop();
+  appState.optimizedPoints = snapshot;
+  renderTrack(snapshot, { preserveView: true });
+  renderStats(appState.rawPoints.length ? appState.rawPoints : snapshot, snapshot);
+  pointInfoEl.textContent = 'Redo. Click a point on map to see GPS details.';
+  setStatus('Redo.');
+  undoBtnEl.disabled = false;
+  redoBtnEl.disabled = appState.redoStack.length === 0;
+}
+
 function showPointContextMenu(event, pointIndex) {
   appState.contextMenuPointIndex = pointIndex;
   const originalEvent = event.originalEvent;
@@ -1079,11 +1329,15 @@ function showPointContextMenu(event, pointIndex) {
     return;
   }
 
-  const x = originalEvent.clientX;
-  const y = originalEvent.clientY;
-  pointContextMenuEl.style.left = `${x}px`;
-  pointContextMenuEl.style.top = `${y}px`;
   pointContextMenuEl.hidden = false;
+  const menuW = pointContextMenuEl.offsetWidth;
+  const menuH = pointContextMenuEl.offsetHeight;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const x = originalEvent.clientX + menuW > vw ? originalEvent.clientX - menuW : originalEvent.clientX;
+  const y = originalEvent.clientY + menuH > vh ? originalEvent.clientY - menuH : originalEvent.clientY;
+  pointContextMenuEl.style.left = `${Math.max(0, x)}px`;
+  pointContextMenuEl.style.top = `${Math.max(0, y)}px`;
 }
 
 function hidePointContextMenu() {
@@ -1101,6 +1355,7 @@ function removePointFromTrack(index) {
     return;
   }
 
+  pushHistory(appState.optimizedPoints.slice());
   const updated = appState.optimizedPoints.filter((_, pointIndex) => pointIndex !== index);
   const reAnnotated = annotateSpeed(updated);
 
@@ -1274,9 +1529,23 @@ function escapeXml(text) {
 
 async function copyMapToClipboard() {
   const mapContainer = appState.map.getContainer();
-  const canvases = Array.from(mapContainer.querySelectorAll('canvas'));
 
+  // Hide point markers and empty-state overlay
+  const hiddenEls = [
+    mapContainer.querySelector('.leaflet-marker-pane'),
+    mapContainer.querySelector('.leaflet-shadow-pane'),
+    mapEmptyStateEl
+  ].filter(Boolean);
+
+  hiddenEls.forEach((el) => { el.style.visibility = 'hidden'; });
+
+  // One rAF so the style is applied before we read layout
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  // Use the vector canvas as the pixel-size reference (accounts for devicePixelRatio)
+  const canvases = Array.from(mapContainer.querySelectorAll('canvas'));
   if (!canvases.length) {
+    hiddenEls.forEach((el) => { el.style.visibility = ''; });
     setStatus('Nothing to capture: no map canvas found.');
     return;
   }
@@ -1284,19 +1553,44 @@ async function copyMapToClipboard() {
   const ref = canvases[0];
   const width = ref.width;
   const height = ref.height;
+  const dpr = window.devicePixelRatio || 1;
 
   const composite = document.createElement('canvas');
   composite.width = width;
   composite.height = height;
   const ctx = composite.getContext('2d');
 
-  for (const canvas of canvases) {
+  const containerRect = mapContainer.getBoundingClientRect();
+
+  // --- 1. Draw tile <img> elements at their screen positions ---
+  const tileImgs = Array.from(
+    mapContainer.querySelectorAll('.leaflet-tile:not(.leaflet-tile-loading)')
+  );
+  for (const img of tileImgs) {
+    if (!img.complete || !img.naturalWidth) continue;
+    const r = img.getBoundingClientRect();
+    const x = (r.left - containerRect.left) * dpr;
+    const y = (r.top - containerRect.top) * dpr;
     try {
-      ctx.drawImage(canvas, 0, 0, width, height);
+      ctx.drawImage(img, x, y, r.width * dpr, r.height * dpr);
     } catch {
-      // skip tainted layer (should not occur with crossOrigin: 'anonymous')
+      // CORS-tainted tile — skip (OSM sends CORS headers so this is rare)
     }
   }
+
+  // --- 2. Draw vector canvases on top (track polyline) ---
+  for (const canvas of canvases) {
+    const r = canvas.getBoundingClientRect();
+    const cx = (r.left - containerRect.left) * dpr;
+    const cy = (r.top - containerRect.top) * dpr;
+    try {
+      ctx.drawImage(canvas, cx, cy, canvas.width, canvas.height);
+    } catch {
+      // skip tainted
+    }
+  }
+
+  hiddenEls.forEach((el) => { el.style.visibility = ''; });
 
   composite.toBlob(async (blob) => {
     if (!blob) {
