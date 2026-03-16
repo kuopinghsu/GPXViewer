@@ -1,0 +1,9 @@
+{
+  "name": "gpxviewer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single-file GPX/KML viewer and optimizer",
+  "scripts": {
+    "build": "node build.js"
+  }
+}
