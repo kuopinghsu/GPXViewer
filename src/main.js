@@ -3,7 +3,8 @@ const appState = {
   layers: {
     track: null,
     points: null,
-    transport: null
+    transport: null,
+    baseTile: null
   },
   rawPoints: [],
   optimizedPoints: [],
@@ -13,29 +14,48 @@ const appState = {
   redoStack: [],
   selectedMarker: null,
   fileName: '',
-  contextMenuPointIndex: -1
+  contextMenuPointIndex: -1,
+  lonOffset: 0  // 360 when track crosses Pacific, 0 otherwise
 };
 
-const METERS_PER_KM = 1000;
 const MS_PER_HOUR = 3600000;
 
 const COORD_EPSILON = 1e-7; // ~1 cm precision
+
+// Returns 360 when the track's shortest inter-cluster path crosses the ±180°
+// antimeridian (i.e. the canonical lon span > 180°), 0 otherwise.
+function computeLonOffset(points) {
+  const lons = points.map(p => p.lon);
+  return Math.max(...lons) - Math.min(...lons) > 180 ? 360 : 0;
+}
+// Display longitude: when a Pacific-crossing track is loaded, shift western
+// hemisphere coords to [180, 360] so all Leaflet layers share a coherent space.
+function displayLon(p) {
+  return p.lon < 0 && appState.lonOffset ? p.lon + appState.lonOffset : p.lon;
+}
+// Normalize a display longitude back to canonical [-180, 180] for storage.
+function toStoredLon(lon) {
+  return lon > 180 ? lon - 360 : lon < -180 ? lon + 360 : lon;
+}
 
 let settings = {
   maxAllowedSpeedKmh: 30,
   stationaryRadiusMeters: 150,
   longGapMeters: 100,
-  bezierRedundantToleranceMeters: 8,
+  simplificationToleranceMeters: 8,
+  bezierFillGaps: false,
+  removeRedundantPoints: true,
   dwellMinMs: 3600000,
   flightDistanceKm: 600,
-  flightSpeedKmh: 250
+  flightSpeedKmh: 250,
+  useCarto: false
 };
 
 const fileInputEl = document.getElementById('fileInput');
 const exportBtnEl = document.getElementById('exportBtn');
+const exportKmlBtnEl = document.getElementById('exportKmlBtn');
 const statsEl = document.getElementById('stats');
 const pointInfoEl = document.getElementById('pointInfo');
-const logEl = document.getElementById('log');
 const statusBarEl = document.getElementById('statusBar');
 const pointContextMenuEl = document.getElementById('pointContextMenu');
 const searchGeminiBtnEl = document.getElementById('searchGeminiBtn');
@@ -57,10 +77,13 @@ const mapWrapEl = document.querySelector('.map-wrap');
 const settingMaxAllowedSpeedKmhEl = document.getElementById('settingMaxAllowedSpeedKmh');
 const settingStationaryRadiusMetersEl = document.getElementById('settingStationaryRadiusMeters');
 const settingLongGapMetersEl = document.getElementById('settingLongGapMeters');
-const settingBezierToleranceMetersEl = document.getElementById('settingBezierToleranceMeters');
+const settingSimplificationToleranceMetersEl = document.getElementById('settingSimplificationToleranceMeters');
+const settingBezierFillGapsEl = document.getElementById('settingBezierFillGaps');
+const settingRemoveRedundantPointsEl = document.getElementById('settingRemoveRedundantPoints');
 const settingDwellMinHoursEl = document.getElementById('settingDwellMinHours');
 const settingFlightDistanceKmEl = document.getElementById('settingFlightDistanceKm');
 const settingFlightSpeedKmhEl = document.getElementById('settingFlightSpeedKmh');
+const settingUseCartoEl = document.getElementById('settingUseCarto');
 
 let trackMouseMoveHandler = null;
 
@@ -75,7 +98,7 @@ if (window.matchMedia('(max-width: 900px)').matches) {
 
 function initMap() {
   appState.map = L.map('map', { preferCanvas: true }).setView([25.03, 121.56], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  appState.layers.baseTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors',
     crossOrigin: 'anonymous'
@@ -106,6 +129,13 @@ function wireEvents() {
       return;
     }
     exportGpx(appState.optimizedPoints, appState.fileName);
+  });
+
+  exportKmlBtnEl.addEventListener('click', () => {
+    if (!appState.optimizedPoints.length) {
+      return;
+    }
+    exportKml(appState.optimizedPoints, appState.fileName);
   });
 
   searchGeminiBtnEl.addEventListener('click', () => {
@@ -245,14 +275,34 @@ function closeDialog(dialogElement) {
   dialogElement.hidden = true;
 }
 
+function setTileLayer(useCarto) {
+  if (appState.layers.baseTile) {
+    appState.map.removeLayer(appState.layers.baseTile);
+  }
+  if (useCarto) {
+    appState.layers.baseTile = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+    ).addTo(appState.map);
+  } else {
+    appState.layers.baseTile = L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', crossOrigin: 'anonymous' }
+    ).addTo(appState.map);
+  }
+}
+
 function populateSettingsForm() {
   settingMaxAllowedSpeedKmhEl.value = settings.maxAllowedSpeedKmh;
   settingStationaryRadiusMetersEl.value = settings.stationaryRadiusMeters;
   settingLongGapMetersEl.value = settings.longGapMeters;
-  settingBezierToleranceMetersEl.value = settings.bezierRedundantToleranceMeters;
+  settingSimplificationToleranceMetersEl.value = settings.simplificationToleranceMeters;
+  settingBezierFillGapsEl.checked = settings.bezierFillGaps;
+  settingRemoveRedundantPointsEl.checked = settings.removeRedundantPoints;
   settingDwellMinHoursEl.value = (settings.dwellMinMs / MS_PER_HOUR).toFixed(2);
   settingFlightDistanceKmEl.value = settings.flightDistanceKm;
   settingFlightSpeedKmhEl.value = settings.flightSpeedKmh;
+  settingUseCartoEl.checked = settings.useCarto;
 }
 
 function saveSettingsFromForm() {
@@ -260,19 +310,24 @@ function saveSettingsFromForm() {
     maxAllowedSpeedKmh: Number(settingMaxAllowedSpeedKmhEl.value),
     stationaryRadiusMeters: Number(settingStationaryRadiusMetersEl.value),
     longGapMeters: Number(settingLongGapMetersEl.value),
-    bezierRedundantToleranceMeters: Number(settingBezierToleranceMetersEl.value),
+    simplificationToleranceMeters: Number(settingSimplificationToleranceMetersEl.value),
+    bezierFillGaps: settingBezierFillGapsEl.checked,
+    removeRedundantPoints: settingRemoveRedundantPointsEl.checked,
     dwellMinMs: Number(settingDwellMinHoursEl.value) * MS_PER_HOUR,
     flightDistanceKm: Number(settingFlightDistanceKmEl.value),
-    flightSpeedKmh: Number(settingFlightSpeedKmhEl.value)
+    flightSpeedKmh: Number(settingFlightSpeedKmhEl.value),
+    useCarto: settingUseCartoEl.checked
   };
 
-  const invalid = Object.values(nextSettings).some((value) => !Number.isFinite(value) || value <= 0);
+  const { bezierFillGaps: _bfg, removeRedundantPoints: _rrp, useCarto: _uc, ...numericSettings } = nextSettings;
+  const invalid = Object.values(numericSettings).some((value) => !Number.isFinite(value) || value <= 0);
   if (invalid) {
     setStatus('Invalid settings values. Please use numbers greater than 0.');
     return;
   }
 
   settings = { ...settings, ...nextSettings };
+  setTileLayer(settings.useCarto);
   closeDialog(settingsDialogEl);
 
   if (appState.rawPoints.length >= 2) {
@@ -301,12 +356,17 @@ async function handleImport(file) {
 
     let rawPoints;
     let skipOptimize = false;
+    let embeddedSettings = null;
     if (ext === 'gpx') {
       const parsed = parseGpx(text);
       rawPoints = parsed.points;
+      embeddedSettings = parsed.embeddedSettings;
       skipOptimize = parsed.creator === 'GPXViewer';
     } else if (ext === 'kml') {
-      rawPoints = parseKml(text);
+      const parsed = parseKml(text);
+      rawPoints = parsed.points;
+      embeddedSettings = parsed.embeddedSettings;
+      if (embeddedSettings) skipOptimize = true;
     } else if (ext === 'json') {
       rawPoints = parsePolarstepsJson(text);
     } else {
@@ -315,6 +375,11 @@ async function handleImport(file) {
 
     if (rawPoints.length < 2) {
       throw new Error('Track must contain at least 2 points.');
+    }
+
+    if (embeddedSettings) {
+      settings = { ...settings, ...embeddedSettings };
+      populateSettingsForm();
     }
 
     const optimized = skipOptimize ? annotateSpeed(rawPoints) : optimizePoints(rawPoints);
@@ -334,12 +399,14 @@ async function handleImport(file) {
       mapEmptyStateEl.hidden = true;
     }
     exportBtnEl.disabled = false;
+    exportKmlBtnEl.disabled = false;
     undoBtnEl.disabled = true;
     redoBtnEl.disabled = true;
-    setStatus(`Imported ${rawPoints.length} points${skipOptimize ? '' : `, optimized to ${optimized.length} points`}.`);
+    setStatus(`Imported ${rawPoints.length} points${skipOptimize ? '' : `, optimized to ${optimized.length} points`}${embeddedSettings ? ' (settings restored)' : ''}.`);
   } catch (error) {
     setStatus(`Error: ${error.message}`);
     exportBtnEl.disabled = true;
+    exportKmlBtnEl.disabled = true;
   }
 }
 
@@ -600,7 +667,13 @@ function parseGpx(xmlText) {
     .filter(Boolean)
     .sort((a, b) => a.time - b.time);
 
-  return { points, creator };
+  const settingsNode = xml.querySelector('metadata > extensions > gpxviewer-settings');
+  let embeddedSettings = null;
+  if (settingsNode) {
+    try { embeddedSettings = JSON.parse(atob(settingsNode.textContent.trim())); } catch {}
+  }
+
+  return { points, creator, embeddedSettings };
 }
 
 function parseKml(xmlText) {
@@ -608,6 +681,12 @@ function parseKml(xmlText) {
   const parseError = xml.querySelector('parsererror');
   if (parseError) {
     throw new Error('Invalid KML XML.');
+  }
+
+  const settingsNode = xml.querySelector('Data[name="gpxviewer-settings"] > value');
+  let embeddedSettings = null;
+  if (settingsNode) {
+    try { embeddedSettings = JSON.parse(atob(settingsNode.textContent.trim())); } catch {}
   }
 
   const whenNodes = Array.from(xml.querySelectorAll('when'));
@@ -635,7 +714,7 @@ function parseKml(xmlText) {
       }
     }
     if (points.length) {
-      return points;
+      return { points, embeddedSettings };
     }
   }
 
@@ -645,7 +724,7 @@ function parseKml(xmlText) {
   }
 
   // KML LineString has no timestamps; assign synthetic 1-minute intervals from epoch 0
-  return coordinateBlock.textContent
+  const points = coordinateBlock.textContent
     .trim()
     .split(/\s+/)
     .map((coord, index) => {
@@ -668,11 +747,12 @@ function parseKml(xmlText) {
       };
     })
     .filter(Boolean);
+  return { points, embeddedSettings };
 }
 
 function optimizePoints(rawPoints) {
   const cleaned = removeIllegalSpeedPoints(rawPoints);
-  const bezierReduced = removeRedundantPointsByBezier(cleaned);
+  const bezierReduced = settings.removeRedundantPoints ? removeRedundantPointsByBezier(cleaned) : cleaned;
   const reduced = reduceStationaryPoints(bezierReduced);
   const densified = insertBezierPointsForLongGaps(reduced);
   return annotateSpeed(densified);
@@ -705,7 +785,7 @@ function removeRedundantPointsByBezier(points) {
     const fittedMid = cubicBezierPoint(prev, control1, control2, next, 0.5);
     const deviationMeters = haversineMeters(curr, fittedMid);
 
-    if (deviationMeters > settings.bezierRedundantToleranceMeters) {
+    if (deviationMeters > settings.simplificationToleranceMeters) {
       kept.push(curr);
     }
   }
@@ -845,10 +925,15 @@ function createClusterCenterPoint(cluster) {
 }
 
 function insertBezierPointsForLongGaps(points) {
+  if (!settings.bezierFillGaps) {
+    return points.slice();
+  }
+
   if (points.length < 2) {
     return points.slice();
   }
 
+  const MAX_ANGLE_DEG = 60;
   const output = [points[0]];
 
   for (let i = 1; i < points.length; i += 1) {
@@ -857,10 +942,27 @@ function insertBezierPointsForLongGaps(points) {
     const segmentDistanceMeters = haversineMeters(start, end);
 
     if (segmentDistanceMeters > settings.longGapMeters) {
-      const prev = i - 2 >= 0 ? points[i - 2] : start;
-      const next = i + 1 < points.length ? points[i + 1] : end;
-      const bezierPoint = buildBezierMidPoint(prev, start, end, next, i);
-      output.push(bezierPoint);
+      const prev = i - 2 >= 0 ? points[i - 2] : null;
+      const next = i + 1 < points.length ? points[i + 1] : null;
+
+      const gapBearing = bearingDeg(start, end);
+      let angleOk = true;
+
+      if (prev && haversineMeters(prev, start) > 1) {
+        if (angleDiffDeg(bearingDeg(prev, start), gapBearing) > MAX_ANGLE_DEG) {
+          angleOk = false;
+        }
+      }
+      if (angleOk && next && haversineMeters(end, next) > 1) {
+        if (angleDiffDeg(gapBearing, bearingDeg(end, next)) > MAX_ANGLE_DEG) {
+          angleOk = false;
+        }
+      }
+
+      if (angleOk) {
+        const bezierPoint = buildBezierMidPoint(prev ?? start, start, end, next ?? end, i);
+        output.push(bezierPoint);
+      }
     }
 
     output.push(end);
@@ -925,49 +1027,61 @@ function annotateSpeed(points) {
   });
 }
 
+// Compute a great-circle arc from p1 to p2, parameterized by longitude.
+// p1 and p2 must already be in display coordinates (via displayLon()), so the
+// longitude walk p1.lon → p2.lon never crosses ±180° and needs no splitting.
 function greatCircleArc(p1, p2, numPoints) {
   const toRad = Math.PI / 180;
-  const toDeg = 180 / Math.PI;
-  const lat1 = p1.lat * toRad;
-  const lon1 = p1.lon * toRad;
-  const lat2 = p2.lat * toRad;
-  const lon2 = p2.lon * toRad;
-  const d = 2 * Math.asin(Math.sqrt(
-    Math.sin((lat2 - lat1) / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin((lon2 - lon1) / 2) ** 2
-  ));
-  if (d < 1e-8) return [[p1.lat, p1.lon], [p2.lat, p2.lon]];
+  const dLon = p2.lon - p1.lon; // direct delta; caller provides normalized display coords
+  if (Math.abs(dLon) < 1e-8) return [[[p1.lat, p1.lon], [p2.lat, p2.lon]]];
+
+  // Great-circle normal vector n = P1 × P2.
+  // cos/sin of display longitudes >180° equal those of the equivalent negative
+  // longitude, so the 3D unit-sphere position is unchanged — math stays correct.
+  const cosA = Math.cos(p1.lat * toRad), sinA = Math.sin(p1.lat * toRad);
+  const cosB = Math.cos(p2.lat * toRad), sinB = Math.sin(p2.lat * toRad);
+  const cosla = Math.cos(p1.lon * toRad), sinla = Math.sin(p1.lon * toRad);
+  const coslb = Math.cos(p2.lon * toRad), sinlb = Math.sin(p2.lon * toRad);
+  let nx = cosA * sinla * sinB - sinA * cosB * sinlb;
+  let ny = sinA * cosB * coslb - cosA * cosla * sinB;
+  let nz = cosA * cosla * cosB * sinlb - cosA * sinla * cosB * coslb;
+  if (nz < 0) { nx = -nx; ny = -ny; nz = -nz; }
+
+  // At each longitude λ, the great-circle latitude satisfies n·P = 0:
+  //   lat = atan2(-(nx·cosλ + ny·sinλ), nz)
+  // Blend 40% great-circle + 60% straight line to reduce excessive northward bulge.
+  const CURVE = 0.4;
   const result = [];
   for (let i = 0; i <= numPoints; i++) {
     const f = i / numPoints;
-    const A = Math.sin((1 - f) * d) / Math.sin(d);
-    const B = Math.sin(f * d) / Math.sin(d);
-    const x = A * Math.cos(lat1) * Math.cos(lon1) + B * Math.cos(lat2) * Math.cos(lon2);
-    const y = A * Math.cos(lat1) * Math.sin(lon1) + B * Math.cos(lat2) * Math.sin(lon2);
-    const z = A * Math.sin(lat1) + B * Math.sin(lat2);
-    result.push([
-      Math.atan2(z, Math.sqrt(x * x + y * y)) * toDeg,
-      Math.atan2(y, x) * toDeg
-    ]);
+    const lon = p1.lon + f * dLon;
+    const lam = lon * toRad;
+    const gcLat = Math.atan2(-(nx * Math.cos(lam) + ny * Math.sin(lam)), nz) / toRad;
+    const straightLat = p1.lat + f * (p2.lat - p1.lat);
+    result.push([gcLat * CURVE + straightLat * (1 - CURVE), lon]);
   }
-  return result;
+  result[0] = [p1.lat, p1.lon];
+  result[numPoints] = [p2.lat, p2.lon];
+  return [result];
 }
 
 function buildTrackRuns(points, flightStartSet) {
   if (points.length < 2) return [];
   const runs = [];
-  let nonFlightLatlngs = [[points[0].lat, points[0].lon]];
+  let nonFlightLatlngs = [[points[0].lat, displayLon(points[0])]];
   for (let i = 0; i < points.length - 1; i++) {
     const p = points[i];
     const next = points[i + 1];
     if (!flightStartSet.has(p)) {
-      nonFlightLatlngs.push([next.lat, next.lon]);
+      nonFlightLatlngs.push([next.lat, displayLon(next)]);
     } else {
       if (nonFlightLatlngs.length >= 2) {
         runs.push({ isFlight: false, latlngs: nonFlightLatlngs });
       }
-      runs.push({ isFlight: true, latlngs: greatCircleArc(p, next, 60) });
-      nonFlightLatlngs = [[next.lat, next.lon]];
+      const dp = { lat: p.lat, lon: displayLon(p) };
+      const dnext = { lat: next.lat, lon: displayLon(next) };
+      runs.push({ isFlight: true, latlngs: greatCircleArc(dp, dnext, 60) });
+      nonFlightLatlngs = [[next.lat, displayLon(next)]];
     }
   }
   if (nonFlightLatlngs.length >= 2) {
@@ -986,7 +1100,7 @@ function renderPointMarkers(points) {
   const last = points.length - 1;
 
   points.forEach((point, index) => {
-    const pos = appState.map.latLngToContainerPoint([point.lat, point.lon]);
+    const pos = appState.map.latLngToContainerPoint([point.lat, displayLon(point)]);
     const dx = pos.x - lastPos.x;
     const dy = pos.y - lastPos.y;
     const farEnough = Math.sqrt(dx * dx + dy * dy) >= MIN_GAP_PX;
@@ -1000,7 +1114,7 @@ function renderPointMarkers(points) {
     const size = point.isDwell ? calcDwellSize(point.dwellMs) : 10;
     const classNames = ['point-marker', point.isDwell ? 'dwell-marker' : ''].join(' ').trim();
 
-    const marker = L.marker([point.lat, point.lon], {
+    const marker = L.marker([point.lat, displayLon(point)], {
       draggable: true,
       icon: L.divIcon({
         className: '',
@@ -1044,6 +1158,8 @@ function renderTrack(points, options = {}) {
   appState.layers.points.clearLayers();
   appState.layers.transport.clearLayers();
 
+  if (centerOnFirst) appState.lonOffset = computeLonOffset(points);
+
   if (trackMouseMoveHandler) {
     appState.map.off('mousemove', trackMouseMoveHandler);
     trackMouseMoveHandler = null;
@@ -1076,7 +1192,7 @@ function renderTrack(points, options = {}) {
     appState.pointMarkers.forEach((marker, i) => {
       if (!marker) return;
       const p = appState.optimizedPoints[i];
-      const pos = appState.map.latLngToContainerPoint([p.lat, p.lon]);
+      const pos = appState.map.latLngToContainerPoint([p.lat, displayLon(p)]);
       const dx = mousePos.x - pos.x;
       const dy = mousePos.y - pos.y;
       const d2 = dx * dx + dy * dy;
@@ -1137,7 +1253,7 @@ function renderTrack(points, options = {}) {
     nearPoint = appState.pointMarkers.some((marker, i) => {
       if (!marker) return false;
       const p = appState.optimizedPoints[i];
-      const pos = appState.map.latLngToContainerPoint([p.lat, p.lon]);
+      const pos = appState.map.latLngToContainerPoint([p.lat, displayLon(p)]);
       const dx = mousePos.x - pos.x;
       const dy = mousePos.y - pos.y;
       return dx * dx + dy * dy <= threshold;
@@ -1148,7 +1264,22 @@ function renderTrack(points, options = {}) {
 
   const firstPoint = points[0];
   if (centerOnFirst && firstPoint) {
-    appState.map.setView([firstPoint.lat, firstPoint.lon], appState.map.getZoom());
+    const lats = points.map(p => p.lat);
+    const lons = points.map(p => displayLon(p));
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+    if (appState.lonOffset) {
+      // Pacific-crossing track: fitBounds normalizes lon>180 back to negative,
+      // making east < west and breaking the centering. Use setView instead.
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLon = (minLon + maxLon) / 2;
+      const lonSpan = maxLon - minLon;
+      // Choose zoom so the full lon span fits: at zoom Z, ~1440/2^Z degrees visible.
+      const zoom = Math.max(1, Math.min(6, Math.floor(Math.log2(1440 / lonSpan))));
+      appState.map.setView([centerLat, centerLon], zoom);
+    } else {
+      appState.map.fitBounds([[minLat, minLon], [maxLat, maxLon]], { padding: [20, 20] });
+    }
   } else if (preserveView && previousCenter && Number.isFinite(previousZoom)) {
     appState.map.setView(previousCenter, previousZoom, { animate: false });
   }
@@ -1156,14 +1287,16 @@ function renderTrack(points, options = {}) {
   renderPointMarkers(points);
 
   movementSegments.forEach((segment) => {
-    const mid = midpoint(segment.start, segment.end);
+    const sp = { lat: segment.start.lat, lon: displayLon(segment.start) };
+    const ep = { lat: segment.end.lat, lon: displayLon(segment.end) };
+    const arcMid = greatCircleMidpoint(sp, ep);
     const icon = L.divIcon({
       className: '',
       html: `<div class="transport-icon" title="${segment.type}">${segment.emoji}</div>`,
       iconSize: [20, 20],
       iconAnchor: [10, 10]
     });
-    L.marker([mid.lat, mid.lon], { icon }).addTo(appState.layers.transport);
+    L.marker([arcMid.lat, arcMid.lon], { icon }).addTo(appState.layers.transport);
   });
 }
 
@@ -1188,7 +1321,7 @@ function insertPointOnNearestSegment(targetLatLng) {
   const insertedPoint = {
     id: `insert-${Date.now()}-${segmentIndex}`,
     lat: projectedLatLng.lat,
-    lon: projectedLatLng.lng,
+    lon: toStoredLon(projectedLatLng.lng),
     ele: (startEle + endEle) / 2,
     time: midTime,
     isDwell: false,
@@ -1220,7 +1353,7 @@ function movePointInTrack(index, latlng) {
     return {
       ...point,
       lat: latlng.lat,
-      lon: latlng.lng
+      lon: toStoredLon(latlng.lng)
     };
   });
 
@@ -1242,8 +1375,8 @@ function findNearestSegmentIndex(points, targetLatLng) {
   let bestDistance = Number.POSITIVE_INFINITY;
 
   for (let i = 0; i < points.length - 1; i += 1) {
-    const a = appState.map.latLngToLayerPoint([points[i].lat, points[i].lon]);
-    const b = appState.map.latLngToLayerPoint([points[i + 1].lat, points[i + 1].lon]);
+    const a = appState.map.latLngToLayerPoint([points[i].lat, displayLon(points[i])]);
+    const b = appState.map.latLngToLayerPoint([points[i + 1].lat, displayLon(points[i + 1])]);
     const distance = pointToSegmentDistance(target, a, b);
     if (distance < bestDistance) {
       bestDistance = distance;
@@ -1256,8 +1389,8 @@ function findNearestSegmentIndex(points, targetLatLng) {
 
 function projectLatLngToSegment(start, end, targetLatLng) {
   const target = appState.map.latLngToLayerPoint(targetLatLng);
-  const a = appState.map.latLngToLayerPoint([start.lat, start.lon]);
-  const b = appState.map.latLngToLayerPoint([end.lat, end.lon]);
+  const a = appState.map.latLngToLayerPoint([start.lat, displayLon(start)]);
+  const b = appState.map.latLngToLayerPoint([end.lat, displayLon(end)]);
   const projected = closestPointOnSegment(target, a, b);
   return appState.map.layerPointToLatLng(projected);
 }
@@ -1443,9 +1576,60 @@ function serializeTrkpt(p) {
   return `      <trkpt lat="${p.lat}" lon="${p.lon}">\n        <ele>${Number(p.ele || 0)}</ele>\n        <time>${p.time.toISOString()}</time>\n      </trkpt>`;
 }
 
+function exportKml(points, sourceFileName) {
+  const safeName = sourceFileName.replace(/\.[^.]+$/, '');
+  const settingsEncoded = btoa(JSON.stringify(settings));
+  const whens = points.map((p) => `        <when>${p.time.toISOString()}</when>`).join('\n');
+  const coords = points.map((p) => `        <gx:coord>${p.lon} ${p.lat} ${Number(p.ele || 0)}</gx:coord>`).join('\n');
+  const kml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">',
+    '  <Document>',
+    `    <name>${escapeXml(safeName)}-optimized</name>`,
+    '    <ExtendedData>',
+    '      <Data name="gpxviewer-settings">',
+    `        <value>${settingsEncoded}</value>`,
+    '      </Data>',
+    '    </ExtendedData>',
+    '    <Placemark>',
+    `      <name>${escapeXml(safeName)}-optimized</name>`,
+    '      <gx:Track>',
+    whens,
+    coords,
+    '      </gx:Track>',
+    '    </Placemark>',
+    '  </Document>',
+    '</kml>',
+  ].join('\n');
+
+  const blob = new Blob([kml], { type: 'application/vnd.google-earth.kml+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeName}-optimized.kml`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function exportGpx(points, sourceFileName) {
   const safeName = sourceFileName.replace(/\.[^.]+$/, '');
-  const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="GPXViewer" xmlns="http://www.topografix.com/GPX/1/1">\n  <trk>\n    <name>${escapeXml(safeName)}-optimized</name>\n    <trkseg>\n${points.map(serializeTrkpt).join('\n')}\n    </trkseg>\n  </trk>\n</gpx>`;
+  const settingsEncoded = btoa(JSON.stringify(settings));
+  const gpx = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<gpx version="1.1" creator="GPXViewer" xmlns="http://www.topografix.com/GPX/1/1">',
+    '  <metadata>',
+    '    <extensions>',
+    `      <gpxviewer-settings>${settingsEncoded}</gpxviewer-settings>`,
+    '    </extensions>',
+    '  </metadata>',
+    '  <trk>',
+    `    <name>${escapeXml(safeName)}-optimized</name>`,
+    '    <trkseg>',
+    points.map(serializeTrkpt).join('\n'),
+    '    </trkseg>',
+    '  </trk>',
+    '</gpx>',
+  ].join('\n');
 
   const blob = new Blob([gpx], { type: 'application/gpx+xml' });
   const url = URL.createObjectURL(blob);
@@ -1472,8 +1656,38 @@ function calcDwellSize(dwellMs) {
   return minSize + ((maxSize - minSize) * hours) / maxHours;
 }
 
-function midpoint(a, b) {
-  return { lat: (a.lat + b.lat) / 2, lon: (a.lon + b.lon) / 2 };
+// Returns the midpoint of the drawn arc. Uses the same lon-parameterized formula
+// as greatCircleArc; caller must pass display-normalized coordinates (via displayLon()).
+function greatCircleMidpoint(p1, p2) {
+  const toRad = Math.PI / 180;
+  const dLon = p2.lon - p1.lon;
+  if (Math.abs(dLon) < 1e-8) return { lat: p1.lat, lon: p1.lon };
+
+  const cosA = Math.cos(p1.lat * toRad), sinA = Math.sin(p1.lat * toRad);
+  const cosB = Math.cos(p2.lat * toRad), sinB = Math.sin(p2.lat * toRad);
+  const cosla = Math.cos(p1.lon * toRad), sinla = Math.sin(p1.lon * toRad);
+  const coslb = Math.cos(p2.lon * toRad), sinlb = Math.sin(p2.lon * toRad);
+  let nx = cosA * sinla * sinB - sinA * cosB * sinlb;
+  let ny = sinA * cosB * coslb - cosA * cosla * sinB;
+  let nz = cosA * cosla * cosB * sinlb - cosA * sinla * cosB * coslb;
+  if (nz < 0) { nx = -nx; ny = -ny; nz = -nz; }
+
+  const CURVE = 0.4;
+  const midLon = p1.lon + 0.5 * dLon;
+  const lam = midLon * toRad;
+  const gcLat = Math.atan2(-(nx * Math.cos(lam) + ny * Math.sin(lam)), nz) / toRad;
+  const straightLat = (p1.lat + p2.lat) / 2;
+  return { lat: gcLat * CURVE + straightLat * (1 - CURVE), lon: midLon };
+}
+
+function bearingDeg(from, to) {
+  const dLon = to.lon - from.lon;
+  const dLat = to.lat - from.lat;
+  return Math.atan2(dLon, dLat) * 180 / Math.PI;
+}
+
+function angleDiffDeg(a, b) {
+  return Math.abs(((b - a + 540) % 360) - 180);
 }
 
 function haversineKm(a, b) {
