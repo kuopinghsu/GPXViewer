@@ -18,99 +18,99 @@
 .leaflet-zoom-box,
 .leaflet-image-layer,
 .leaflet-layer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    }
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
 .leaflet-container {
-    overflow: hidden;
-    }
+	overflow: hidden;
+	}
 .leaflet-tile,
 .leaflet-marker-icon,
 .leaflet-marker-shadow {
-    -webkit-user-select: none;
-       -moz-user-select: none;
-            user-select: none;
-      -webkit-user-drag: none;
-    }
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
 /* Prevents IE11 from highlighting tiles in blue */
 .leaflet-tile::selection {
-    background: transparent;
+	background: transparent;
 }
 /* Safari renders non-retina tile on retina better with this, but Chrome is worse */
 .leaflet-safari .leaflet-tile {
-    image-rendering: -webkit-optimize-contrast;
-    }
+	image-rendering: -webkit-optimize-contrast;
+	}
 /* hack that prevents hw layers "stretching" when loading new tiles */
 .leaflet-safari .leaflet-tile-container {
-    width: 1600px;
-    height: 1600px;
-    -webkit-transform-origin: 0 0;
-    }
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
 .leaflet-marker-icon,
 .leaflet-marker-shadow {
-    display: block;
-    }
+	display: block;
+	}
 /* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
 /* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
 .leaflet-container .leaflet-overlay-pane svg {
-    max-width: none !important;
-    max-height: none !important;
-    }
+	max-width: none !important;
+	max-height: none !important;
+	}
 .leaflet-container .leaflet-marker-pane img,
 .leaflet-container .leaflet-shadow-pane img,
 .leaflet-container .leaflet-tile-pane img,
 .leaflet-container img.leaflet-image-layer,
 .leaflet-container .leaflet-tile {
-    max-width: none !important;
-    max-height: none !important;
-    width: auto;
-    padding: 0;
-    }
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
 
 .leaflet-container img.leaflet-tile {
-    /* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
-    mix-blend-mode: plus-lighter;
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
 }
 
 .leaflet-container.leaflet-touch-zoom {
-    -ms-touch-action: pan-x pan-y;
-    touch-action: pan-x pan-y;
-    }
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
 .leaflet-container.leaflet-touch-drag {
-    -ms-touch-action: pinch-zoom;
-    /* Fallback for FF which doesn't support pinch-zoom */
-    touch-action: none;
-    touch-action: pinch-zoom;
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
 }
 .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
-    -ms-touch-action: none;
-    touch-action: none;
+	-ms-touch-action: none;
+	touch-action: none;
 }
 .leaflet-container {
-    -webkit-tap-highlight-color: transparent;
+	-webkit-tap-highlight-color: transparent;
 }
 .leaflet-container a {
-    -webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
 }
 .leaflet-tile {
-    filter: inherit;
-    visibility: hidden;
-    }
+	filter: inherit;
+	visibility: hidden;
+	}
 .leaflet-tile-loaded {
-    visibility: inherit;
-    }
+	visibility: inherit;
+	}
 .leaflet-zoom-box {
-    width: 0;
-    height: 0;
-    -moz-box-sizing: border-box;
-         box-sizing: border-box;
-    z-index: 800;
-    }
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
 /* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
 .leaflet-overlay-pane svg {
-    -moz-user-select: none;
-    }
+	-moz-user-select: none;
+	}
 
 .leaflet-pane         { z-index: 400; }
 
@@ -125,123 +125,126 @@
 .leaflet-map-pane svg    { z-index: 200; }
 
 .leaflet-vml-shape {
-    width: 1px;
-    height: 1px;
-    }
+	width: 1px;
+	height: 1px;
+	}
 .lvml {
-    behavior: url(#default#VML);
-    display: inline-block;
-    position: absolute;
-    }
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
 
 /* control positioning */
 
 .leaflet-control {
-    position: relative;
-    z-index: 800;
-    pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
-    pointer-events: auto;
-    }
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
 .leaflet-top,
 .leaflet-bottom {
-    position: absolute;
-    z-index: 1000;
-    pointer-events: none;
-    }
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
 .leaflet-top {
-    top: 0;
-    }
+	top: 0;
+	}
 .leaflet-right {
-    right: 0;
-    }
+	right: 0;
+	}
 .leaflet-bottom {
-    bottom: 0;
-    }
+	bottom: 0;
+	}
 .leaflet-left {
-    left: 0;
-    }
+	left: 0;
+	}
 .leaflet-control {
-    float: left;
-    clear: both;
-    }
+	float: left;
+	clear: both;
+	}
 .leaflet-right .leaflet-control {
-    float: right;
-    }
+	float: right;
+	}
 .leaflet-top .leaflet-control {
-    margin-top: 10px;
-    }
+	margin-top: 10px;
+	}
 .leaflet-bottom .leaflet-control {
-    margin-bottom: 10px;
-    }
+	margin-bottom: 10px;
+	}
 .leaflet-left .leaflet-control {
-    margin-left: 10px;
-    }
+	margin-left: 10px;
+	}
 .leaflet-right .leaflet-control {
-    margin-right: 10px;
-    }
+	margin-right: 10px;
+	}
+
 
 /* zoom and fade animations */
 
 .leaflet-fade-anim .leaflet-popup {
-    opacity: 0;
-    -webkit-transition: opacity 0.2s linear;
-       -moz-transition: opacity 0.2s linear;
-            transition: opacity 0.2s linear;
-    }
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
 .leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
-    opacity: 1;
-    }
+	opacity: 1;
+	}
 .leaflet-zoom-animated {
-    -webkit-transform-origin: 0 0;
-        -ms-transform-origin: 0 0;
-            transform-origin: 0 0;
-    }
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
 svg.leaflet-zoom-animated {
-    will-change: transform;
+	will-change: transform;
 }
 
 .leaflet-zoom-anim .leaflet-zoom-animated {
-    -webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
-       -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
-            transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
-    }
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
 .leaflet-zoom-anim .leaflet-tile,
 .leaflet-pan-anim .leaflet-tile {
-    -webkit-transition: none;
-       -moz-transition: none;
-            transition: none;
-    }
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
 
 .leaflet-zoom-anim .leaflet-zoom-hide {
-    visibility: hidden;
-    }
+	visibility: hidden;
+	}
+
 
 /* cursors */
 
 .leaflet-interactive {
-    cursor: pointer;
-    }
+	cursor: pointer;
+	}
 .leaflet-grab {
-    cursor: -webkit-grab;
-    cursor:    -moz-grab;
-    cursor:         grab;
-    }
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
 .leaflet-crosshair,
 .leaflet-crosshair .leaflet-interactive {
-    cursor: crosshair;
-    }
+	cursor: crosshair;
+	}
 .leaflet-popup-pane,
 .leaflet-control {
-    cursor: auto;
-    }
+	cursor: auto;
+	}
 .leaflet-dragging .leaflet-grab,
 .leaflet-dragging .leaflet-grab .leaflet-interactive,
 .leaflet-dragging .leaflet-marker-draggable {
-    cursor: move;
-    cursor: -webkit-grabbing;
-    cursor:    -moz-grabbing;
-    cursor:         grabbing;
-    }
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
 
 /* marker & overlays interactivity */
 .leaflet-marker-icon,
@@ -249,428 +252,562 @@ svg.leaflet-zoom-animated {
 .leaflet-image-layer,
 .leaflet-pane > svg path,
 .leaflet-tile-container {
-    pointer-events: none;
-    }
+	pointer-events: none;
+	}
 
 .leaflet-marker-icon.leaflet-interactive,
 .leaflet-image-layer.leaflet-interactive,
 .leaflet-pane > svg path.leaflet-interactive,
 svg.leaflet-image-layer.leaflet-interactive path {
-    pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
-    pointer-events: auto;
-    }
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
 
 /* visual tweaks */
 
 .leaflet-container {
-    background: #ddd;
-    outline-offset: 1px;
-    }
+	background: #ddd;
+	outline-offset: 1px;
+	}
 .leaflet-container a {
-    color: #0078A8;
-    }
+	color: #0078A8;
+	}
 .leaflet-zoom-box {
-    border: 2px dotted #38f;
-    background: rgba(255,255,255,0.5);
-    }
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
 
 /* general typography */
 .leaflet-container {
-    font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    font-size: 0.75rem;
-    line-height: 1.5;
-    }
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
 
 /* general toolbar styles */
 
 .leaflet-bar {
-    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
-    border-radius: 4px;
-    }
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
 .leaflet-bar a {
-    background-color: #fff;
-    border-bottom: 1px solid #ccc;
-    width: 26px;
-    height: 26px;
-    line-height: 26px;
-    display: block;
-    text-align: center;
-    text-decoration: none;
-    color: black;
-    }
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
 .leaflet-bar a,
 .leaflet-control-layers-toggle {
-    background-position: 50% 50%;
-    background-repeat: no-repeat;
-    display: block;
-    }
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
 .leaflet-bar a:hover,
 .leaflet-bar a:focus {
-    background-color: #f4f4f4;
-    }
+	background-color: #f4f4f4;
+	}
 .leaflet-bar a:first-child {
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    }
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
 .leaflet-bar a:last-child {
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-bottom: none;
-    }
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
 .leaflet-bar a.leaflet-disabled {
-    cursor: default;
-    background-color: #f4f4f4;
-    color: #bbb;
-    }
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
 
 .leaflet-touch .leaflet-bar a {
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    }
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
 .leaflet-touch .leaflet-bar a:first-child {
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-    }
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
 .leaflet-touch .leaflet-bar a:last-child {
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-    }
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
 
 /* zoom control */
 
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out {
-    font: bold 18px 'Lucida Console', Monaco, monospace;
-    text-indent: 1px;
-    }
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
 
 .leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
-    font-size: 22px;
-    }
+	font-size: 22px;
+	}
+
 
 /* layers control */
 
 .leaflet-control-layers {
-    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-    background: #fff;
-    border-radius: 5px;
-    }
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
 .leaflet-control-layers-toggle {
-    background-image: url(images/layers.png);
-    width: 36px;
-    height: 36px;
-    }
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
 .leaflet-retina .leaflet-control-layers-toggle {
-    background-image: url(images/layers-2x.png);
-    background-size: 26px 26px;
-    }
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
 .leaflet-touch .leaflet-control-layers-toggle {
-    width: 44px;
-    height: 44px;
-    }
+	width: 44px;
+	height: 44px;
+	}
 .leaflet-control-layers .leaflet-control-layers-list,
 .leaflet-control-layers-expanded .leaflet-control-layers-toggle {
-    display: none;
-    }
+	display: none;
+	}
 .leaflet-control-layers-expanded .leaflet-control-layers-list {
-    display: block;
-    position: relative;
-    }
+	display: block;
+	position: relative;
+	}
 .leaflet-control-layers-expanded {
-    padding: 6px 10px 6px 6px;
-    color: #333;
-    background: #fff;
-    }
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
 .leaflet-control-layers-scrollbar {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    padding-right: 5px;
-    }
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
 .leaflet-control-layers-selector {
-    margin-top: 2px;
-    position: relative;
-    top: 1px;
-    }
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
 .leaflet-control-layers label {
-    display: block;
-    font-size: 13px;
-    font-size: 1.08333em;
-    }
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
 .leaflet-control-layers-separator {
-    height: 0;
-    border-top: 1px solid #ddd;
-    margin: 5px -10px 5px -6px;
-    }
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
 
 /* Default icon URLs */
 .leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
-    background-image: url(images/marker-icon.png);
-    }
+	background-image: url(images/marker-icon.png);
+	}
+
 
 /* attribution and scale controls */
 
 .leaflet-container .leaflet-control-attribution {
-    background: #fff;
-    background: rgba(255, 255, 255, 0.8);
-    margin: 0;
-    }
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
 .leaflet-control-attribution,
 .leaflet-control-scale-line {
-    padding: 0 5px;
-    color: #333;
-    line-height: 1.4;
-    }
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
 .leaflet-control-attribution a {
-    text-decoration: none;
-    }
+	text-decoration: none;
+	}
 .leaflet-control-attribution a:hover,
 .leaflet-control-attribution a:focus {
-    text-decoration: underline;
-    }
+	text-decoration: underline;
+	}
 .leaflet-attribution-flag {
-    display: inline !important;
-    vertical-align: baseline !important;
-    width: 1em;
-    height: 0.6669em;
-    }
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
 .leaflet-left .leaflet-control-scale {
-    margin-left: 5px;
-    }
+	margin-left: 5px;
+	}
 .leaflet-bottom .leaflet-control-scale {
-    margin-bottom: 5px;
-    }
+	margin-bottom: 5px;
+	}
 .leaflet-control-scale-line {
-    border: 2px solid #777;
-    border-top: none;
-    line-height: 1.1;
-    padding: 2px 5px 1px;
-    white-space: nowrap;
-    -moz-box-sizing: border-box;
-         box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.8);
-    text-shadow: 1px 1px #fff;
-    }
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
 .leaflet-control-scale-line:not(:first-child) {
-    border-top: 2px solid #777;
-    border-bottom: none;
-    margin-top: -2px;
-    }
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
 .leaflet-control-scale-line:not(:first-child):not(:last-child) {
-    border-bottom: 2px solid #777;
-    }
+	border-bottom: 2px solid #777;
+	}
 
 .leaflet-touch .leaflet-control-attribution,
 .leaflet-touch .leaflet-control-layers,
 .leaflet-touch .leaflet-bar {
-    box-shadow: none;
-    }
+	box-shadow: none;
+	}
 .leaflet-touch .leaflet-control-layers,
 .leaflet-touch .leaflet-bar {
-    border: 2px solid rgba(0,0,0,0.2);
-    background-clip: padding-box;
-    }
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
 
 /* popup */
 
 .leaflet-popup {
-    position: absolute;
-    text-align: center;
-    margin-bottom: 20px;
-    }
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
 .leaflet-popup-content-wrapper {
-    padding: 1px;
-    text-align: left;
-    border-radius: 12px;
-    }
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
 .leaflet-popup-content {
-    margin: 13px 24px 13px 20px;
-    line-height: 1.3;
-    font-size: 13px;
-    font-size: 1.08333em;
-    min-height: 1px;
-    }
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
 .leaflet-popup-content p {
-    margin: 17px 0;
-    margin: 1.3em 0;
-    }
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
 .leaflet-popup-tip-container {
-    width: 40px;
-    height: 20px;
-    position: absolute;
-    left: 50%;
-    margin-top: -1px;
-    margin-left: -20px;
-    overflow: hidden;
-    pointer-events: none;
-    }
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
 .leaflet-popup-tip {
-    width: 17px;
-    height: 17px;
-    padding: 1px;
+	width: 17px;
+	height: 17px;
+	padding: 1px;
 
-    margin: -10px auto 0;
-    pointer-events: auto;
+	margin: -10px auto 0;
+	pointer-events: auto;
 
-    -webkit-transform: rotate(45deg);
-       -moz-transform: rotate(45deg);
-        -ms-transform: rotate(45deg);
-            transform: rotate(45deg);
-    }
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-    background: white;
-    color: #333;
-    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
-    }
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
 .leaflet-container a.leaflet-popup-close-button {
-    position: absolute;
-    top: 0;
-    right: 0;
-    border: none;
-    text-align: center;
-    width: 24px;
-    height: 24px;
-    font: 16px/24px Tahoma, Verdana, sans-serif;
-    color: #757575;
-    text-decoration: none;
-    background: transparent;
-    }
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
 .leaflet-container a.leaflet-popup-close-button:hover,
 .leaflet-container a.leaflet-popup-close-button:focus {
-    color: #585858;
-    }
+	color: #585858;
+	}
 .leaflet-popup-scrolled {
-    overflow: auto;
-    }
+	overflow: auto;
+	}
 
 .leaflet-oldie .leaflet-popup-content-wrapper {
-    -ms-zoom: 1;
-    }
+	-ms-zoom: 1;
+	}
 .leaflet-oldie .leaflet-popup-tip {
-    width: 24px;
-    margin: 0 auto;
+	width: 24px;
+	margin: 0 auto;
 
-    -ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
-    filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
-    }
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
 
 .leaflet-oldie .leaflet-control-zoom,
 .leaflet-oldie .leaflet-control-layers,
 .leaflet-oldie .leaflet-popup-content-wrapper,
 .leaflet-oldie .leaflet-popup-tip {
-    border: 1px solid #999;
-    }
+	border: 1px solid #999;
+	}
+
 
 /* div icon */
 
 .leaflet-div-icon {
-    background: #fff;
-    border: 1px solid #666;
-    }
+	background: #fff;
+	border: 1px solid #666;
+	}
+
 
 /* Tooltip */
 /* Base styles for the element that has a tooltip */
 .leaflet-tooltip {
-    position: absolute;
-    padding: 6px;
-    background-color: #fff;
-    border: 1px solid #fff;
-    border-radius: 3px;
-    color: #222;
-    white-space: nowrap;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    pointer-events: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    }
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
 .leaflet-tooltip.leaflet-interactive {
-    cursor: pointer;
-    pointer-events: auto;
-    }
+	cursor: pointer;
+	pointer-events: auto;
+	}
 .leaflet-tooltip-top:before,
 .leaflet-tooltip-bottom:before,
 .leaflet-tooltip-left:before,
 .leaflet-tooltip-right:before {
-    position: absolute;
-    pointer-events: none;
-    border: 6px solid transparent;
-    background: transparent;
-    content: "";
-    }
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
 
 /* Directions */
 
 .leaflet-tooltip-bottom {
-    margin-top: 6px;
+	margin-top: 6px;
 }
 .leaflet-tooltip-top {
-    margin-top: -6px;
+	margin-top: -6px;
 }
 .leaflet-tooltip-bottom:before,
 .leaflet-tooltip-top:before {
-    left: 50%;
-    margin-left: -6px;
-    }
+	left: 50%;
+	margin-left: -6px;
+	}
 .leaflet-tooltip-top:before {
-    bottom: 0;
-    margin-bottom: -12px;
-    border-top-color: #fff;
-    }
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
 .leaflet-tooltip-bottom:before {
-    top: 0;
-    margin-top: -12px;
-    margin-left: -6px;
-    border-bottom-color: #fff;
-    }
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
 .leaflet-tooltip-left {
-    margin-left: -6px;
+	margin-left: -6px;
 }
 .leaflet-tooltip-right {
-    margin-left: 6px;
+	margin-left: 6px;
 }
 .leaflet-tooltip-left:before,
 .leaflet-tooltip-right:before {
-    top: 50%;
-    margin-top: -6px;
-    }
+	top: 50%;
+	margin-top: -6px;
+	}
 .leaflet-tooltip-left:before {
-    right: 0;
-    margin-right: -12px;
-    border-left-color: #fff;
-    }
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
 .leaflet-tooltip-right:before {
-    left: 0;
-    margin-left: -12px;
-    border-right-color: #fff;
-    }
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
 
 /* Printing */
 
 @media print {
-    /* Prevent printers from removing background-images of controls. */
-    .leaflet-control {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        }
-    }
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
 
   </style>
   <style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════
+   GPXViewer — OSIRIS-inspired Design System
+   Dark/Light Theme
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Dark Theme (default) ── */
 :root {
-  --bg: #1b1d21;
-  --panel-bg: #25282d;
-  --tb-bg: #2a2e34;
-  --tb-btn-hover: rgba(255, 255, 255, 0.08);
-  --tb-btn-active: rgba(79, 139, 255, 0.2);
-  --border: #3a3f47;
-  --fg: #e6e8ec;
-  --fg-dim: #a6adbb;
-  --accent: #4f8bff;
-  --panel-soft: #2f343d;
+  --bg-void: #04040A;
+  --bg-primary: #06060C;
+  --bg-secondary: #0C0E1A;
+  --bg-tertiary: #121628;
+  --bg-panel: rgba(8, 10, 20, 0.88);
+  --bg-panel-solid: #0C0E1A;
+
+  --gold-primary: #D4AF37;
+  --gold-light: #F0D060;
+  --gold-dim: #8B7325;
+  --gold-glow: rgba(212, 175, 55, 0.3);
+
+  --cyan-primary: #00E5FF;
+  --cyan-dim: #006B7A;
+  --cyan-glow: rgba(0, 229, 255, 0.15);
+
+  --alert-red: #FF3D3D;
+  --alert-orange: #FF9500;
+  --alert-green: #00E676;
+  --alert-blue: #448AFF;
+
+  --border-primary: rgba(212, 175, 55, 0.15);
+  --border-secondary: rgba(212, 175, 55, 0.08);
+  --border-active: rgba(212, 175, 55, 0.4);
+  --border-cyan: rgba(0, 229, 255, 0.2);
+
+  --text-primary: #E8E6E0;
+  --text-secondary: #9B978E;
+  --text-muted: #5C5A54;
+  --text-heading: #F5F0E0;
+  --text-gold: #D4AF37;
+  --text-cyan: #00E5FF;
+
+  --scrollbar-thumb: rgba(212, 175, 55, 0.2);
+  --scrollbar-thumb-hover: rgba(212, 175, 55, 0.4);
+
+  --hover-accent: rgba(212, 175, 55, 0.08);
+  --hover-btn: rgba(212, 175, 55, 0.08);
+  --hover-btn-active: rgba(212, 175, 55, 0.2);
+
+  --input-bg: rgba(18, 22, 40, 0.8);
+  --input-border: rgba(212, 175, 55, 0.15);
+
+  --panel-header-bg: linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0));
+  --separator: rgba(212, 175, 55, 0.08);
+  --dialog-overlay: rgba(0, 0, 0, 0.45);
+
+  --toolbar-bg: #0C0E1A;
+  --toolbar-gradient: linear-gradient(to bottom, #0C0E1A, #06060C);
+  --toolbar-border: rgba(212, 175, 55, 0.15);
+
+  --map-empty-color: var(--text-primary);
+  --marker-border: #fff;
+  --marker-bg: #0ea5e9;
+  --marker-dwell-bg: #f59e0b;
+  --marker-dwell-border: #fef3c7;
+  --marker-selected-bg: #ef4444;
+
+  --context-menu-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  --dialog-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  --drag-over-shadow: inset 0 0 0 3px var(--gold-primary);
+  --btn-primary-bg: var(--gold-primary);
+  --btn-primary-color: #fff;
+  --log-entry-border: rgba(255, 255, 255, 0.04);
+  --log-entry-first-color: var(--text-primary);
+}
+
+/* ── Light Theme ── */
+[data-theme="light"] {
+  --bg-void: #F5F5F7;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F0F0F2;
+  --bg-tertiary: #E8E8EC;
+  --bg-panel: rgba(255, 255, 255, 0.92);
+  --bg-panel-solid: #FFFFFF;
+
+  --gold-primary: #B8860B;
+  --gold-light: #D4A528;
+  --gold-dim: #8B6914;
+  --gold-glow: rgba(184, 134, 11, 0.15);
+
+  --cyan-primary: #0097A7;
+  --cyan-dim: #00838F;
+  --cyan-glow: rgba(0, 151, 167, 0.1);
+
+  --border-primary: rgba(0, 0, 0, 0.12);
+  --border-secondary: rgba(0, 0, 0, 0.06);
+  --border-active: rgba(184, 134, 11, 0.5);
+  --border-cyan: rgba(0, 151, 167, 0.3);
+
+  --text-primary: #1D1D1F;
+  --text-secondary: #6E6E73;
+  --text-muted: #AEAEB2;
+  --text-heading: #000000;
+  --text-gold: #B8860B;
+  --text-cyan: #0097A7;
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+
+  --hover-accent: rgba(184, 134, 11, 0.08);
+  --hover-btn: rgba(0, 0, 0, 0.04);
+  --hover-btn-active: rgba(184, 134, 11, 0.12);
+
+  --input-bg: #F0F0F2;
+  --input-border: rgba(0, 0, 0, 0.12);
+
+  --panel-header-bg: linear-gradient(to bottom, rgba(0,0,0,0.02), rgba(0,0,0,0));
+  --separator: rgba(0, 0, 0, 0.08);
+  --dialog-overlay: rgba(0, 0, 0, 0.3);
+
+  --toolbar-bg: #FFFFFF;
+  --toolbar-gradient: linear-gradient(to bottom, #FFFFFF, #F8F8F8);
+  --toolbar-border: rgba(0, 0, 0, 0.1);
+
+  --map-empty-color: var(--text-heading);
+  --marker-border: #333;
+  --marker-bg: #0097A7;
+  --marker-dwell-bg: #D4A528;
+  --marker-dwell-border: #FFF3CD;
+  --marker-selected-bg: #DC3545;
+
+  --context-menu-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  --dialog-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  --drag-over-shadow: inset 0 0 0 3px var(--gold-primary);
+  --btn-primary-bg: var(--gold-primary);
+  --btn-primary-color: #fff;
+  --log-entry-border: rgba(0, 0, 0, 0.04);
+  --log-entry-first-color: var(--text-heading);
 }
 
 * {
@@ -681,30 +818,64 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--fg);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-void);
+  color: var(--text-primary);
   font-size: 13px;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--bg-void);
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
 }
+
+/* ── Scrollbar ── */
+.styled-scrollbar::-webkit-scrollbar { width: 3px; }
+.styled-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.styled-scrollbar::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
+.styled-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+.styled-scrollbar { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOLBAR
+   ═══════════════════════════════════════════════════════════════ */
 
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 10px 14px;
-  background: var(--tb-bg);
-  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 48px;
+  background: var(--toolbar-gradient);
+  border-bottom: 1px solid var(--toolbar-border);
+  box-shadow:
+    0 1px 0 rgba(212, 175, 55, 0.06) inset,
+    0 2px 12px rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
+  position: relative;
+  z-index: 500;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.toolbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold-dim) 15%, var(--gold-primary) 50%, var(--gold-dim) 85%, transparent 100%);
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .toolbar-brand {
@@ -712,25 +883,33 @@ html, body {
 }
 
 .toolbar-title {
-  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
+  color: var(--text-gold);
+  text-shadow: 0 0 20px var(--gold-glow);
 }
 
 .toolbar-subtitle {
-  color: var(--fg-dim);
-  font-size: 11px;
+  color: var(--text-muted);
+  font-size: 10px;
   margin-top: 2px;
+  letter-spacing: 0.04em;
 }
 
 .toolbar-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
 
 .file-label,
 button {
@@ -742,12 +921,14 @@ button {
   border-radius: 7px;
   min-height: 28px;
   padding: 4px 11px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-secondary);
   background: transparent;
-  color: var(--fg);
-  font-weight: 600;
-  font-size: 12px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
 }
 
 .file-label {
@@ -756,22 +937,84 @@ button {
 
 .file-label:hover,
 button:hover:not(:disabled) {
-  background: var(--tb-btn-hover);
+  background: var(--hover-btn);
+  border-color: var(--border-primary);
+  box-shadow: 0 0 12px var(--gold-glow);
 }
 
 .file-label:active,
 button:active:not(:disabled) {
-  background: var(--tb-btn-active);
+  background: var(--hover-btn-active);
 }
 
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.35;
   cursor: not-allowed;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  position: relative;
+  width: 32px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border-secondary);
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-height: unset;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.theme-toggle:hover {
+  background: var(--hover-btn);
+  border-color: var(--border-primary);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.theme-toggle svg {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: absolute;
+}
+
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+  width: 14px;
+  height: 14px;
+  fill: var(--text-primary);
+}
+
+.theme-toggle .icon-sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+.theme-toggle .icon-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+[data-theme="light"] .theme-toggle .icon-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+[data-theme="light"] .theme-toggle .icon-moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
 }
 
 #fileInput {
   display: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
 
 .main-area {
   display: flex;
@@ -781,58 +1024,9 @@ button:disabled {
   gap: 0;
 }
 
-.stats div,
-.point-info div {
-  margin-bottom: 6px;
-}
-
-.stats strong,
-.point-info strong {
-  color: var(--fg);
-}
-
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 5px;
-  padding: 2px 0;
-}
-
-.stat-label {
-  font-size: 11px;
-  color: var(--fg-dim);
-  font-weight: 400;
-  flex-shrink: 0;
-}
-
-.stat-value {
-  font-size: 13px;
-  color: var(--fg);
-  font-weight: 600;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.log {
-  color: var(--fg-dim);
-  font-size: 0.9rem;
-  white-space: pre-wrap;
-}
-
-.log-entry {
-  font-size: 11px;
-  color: var(--fg-dim);
-  padding: 3px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  white-space: normal;
-  line-height: 1.4;
-}
-
-.log-entry:first-child {
-  color: var(--fg);
-}
+/* ═══════════════════════════════════════════════════════════════
+   MAP
+   ═══════════════════════════════════════════════════════════════ */
 
 .map-wrap,
 #map {
@@ -843,7 +1037,7 @@ button:disabled {
 .map-wrap {
   flex: 1;
   min-width: 0;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--border-secondary);
   position: relative;
 }
 
@@ -862,38 +1056,49 @@ button:disabled {
 }
 
 .map-empty-title {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 16px;
   font-weight: 700;
-  color: var(--fg);
-  opacity: 0.65;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--map-empty-color);
+  opacity: 0.7;
 }
 
 .map-empty-body {
   font-size: 13px;
-  color: var(--fg-dim);
+  color: var(--text-secondary);
   max-width: 280px;
   line-height: 1.6;
   opacity: 0.8;
 }
 
+.map-empty-body strong {
+  color: var(--text-gold);
+}
+
 .map-wrap.drag-over {
-  box-shadow: inset 0 0 0 3px var(--accent);
+  box-shadow: var(--drag-over-shadow);
 }
 
 .map-cursor-crosshair {
   cursor: crosshair !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   RIGHT PANEL
+   ═══════════════════════════════════════════════════════════════ */
+
 .right-panel {
   display: flex;
   flex-direction: column;
   width: 340px;
   flex-shrink: 0;
-  border-left: 1px solid var(--border);
-  background: var(--panel-bg);
+  border-left: 1px solid var(--border-secondary);
+  background: var(--bg-panel-solid);
   overflow: hidden;
   position: relative;
-  transition: width 0.2s ease, border-color 0.2s ease;
+  transition: width 0.2s ease, border-color 0.2s ease, background 0.3s ease;
 }
 
 .right-panel.collapsed {
@@ -913,11 +1118,11 @@ button:disabled {
   transform: translateY(-50%);
   width: 14px;
   height: 44px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-secondary);
   border-right: none;
   border-radius: 4px 0 0 4px;
-  background: var(--panel-bg);
-  color: var(--fg-dim);
+  background: var(--bg-panel-solid);
+  color: var(--text-muted);
   font-size: 12px;
   display: flex;
   align-items: center;
@@ -931,8 +1136,8 @@ button:disabled {
 }
 
 .panel-collapse-btn:hover {
-  background: var(--tb-btn-hover);
-  color: var(--fg);
+  background: var(--hover-btn);
+  color: var(--text-primary);
 }
 
 .panel-collapse-chevron {
@@ -949,7 +1154,7 @@ button:disabled {
 .panel-section {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-secondary);
   min-height: 120px;
 }
 
@@ -964,23 +1169,25 @@ button:disabled {
 }
 
 .panel-header {
-  color: var(--fg-dim);
+  color: var(--text-secondary);
   padding: 8px 10px 7px;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0));
-  border-bottom: 1px solid var(--border);
+  background: var(--panel-header-bg);
+  border-bottom: 1px solid var(--border-secondary);
   flex-shrink: 0;
 }
 
 .panel-title {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.1em;
+  color: var(--text-gold);
 }
 
 .panel-subtitle {
-  font-size: 11px;
-  color: var(--fg-dim);
+  font-size: 10px;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -990,12 +1197,80 @@ button:disabled {
   min-height: 0;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   STATS & INFO
+   ═══════════════════════════════════════════════════════════════ */
+
+.stats div,
+.point-info div {
+  margin-bottom: 6px;
+}
+
+.stats strong,
+.point-info strong {
+  color: var(--text-primary);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+  padding: 2px 0;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-gold);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 12px var(--gold-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOG
+   ═══════════════════════════════════════════════════════════════ */
+
+.log {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+
+.log-entry {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 3px 0;
+  border-bottom: 1px solid var(--log-entry-border);
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.log-entry:first-child {
+  color: var(--log-entry-first-color);
+}
+
 .stats,
 .point-info,
 .log {
-  background: var(--panel-bg);
+  background: var(--bg-panel-solid);
   line-height: 1.45;
+  transition: background 0.3s ease;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   STATUS BAR
+   ═══════════════════════════════════════════════════════════════ */
 
 .status-bar {
   display: flex;
@@ -1004,11 +1279,12 @@ button:disabled {
   gap: 8px;
   padding: 4px 12px;
   font-size: 11px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  color: var(--fg-dim);
-  background: var(--panel-bg);
-  border-top: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  background: var(--bg-panel-solid);
+  border-top: 1px solid var(--border-secondary);
   flex-shrink: 0;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 #statusBar {
@@ -1020,7 +1296,7 @@ button:disabled {
 }
 
 .status-bar-btn {
-  font-family: inherit;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   padding: 2px 8px;
   min-height: 22px;
@@ -1029,13 +1305,17 @@ button:disabled {
   white-space: nowrap;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   CONTEXT MENU
+   ═══════════════════════════════════════════════════════════════ */
+
 .context-menu {
   position: fixed;
   z-index: 2000;
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  background: var(--bg-panel-solid);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  box-shadow: var(--context-menu-shadow);
   padding: 6px;
 }
 
@@ -1048,22 +1328,27 @@ button:disabled {
   min-width: 130px;
   padding: 6px 8px;
   border-radius: 4px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-secondary);
   background: transparent;
-  color: var(--fg);
+  color: var(--text-primary);
   text-align: left;
   font-size: 12px;
 }
 
 .context-menu button:hover {
-  background: var(--tb-btn-hover);
+  background: var(--hover-btn);
+  border-color: var(--border-primary);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   DIALOGS
+   ═══════════════════════════════════════════════════════════════ */
 
 .dialog-overlay {
   position: fixed;
   inset: 0;
   z-index: 2500;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--dialog-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1078,19 +1363,20 @@ button:disabled {
   width: min(520px, 96vw);
   max-height: 88vh;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--panel-bg);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  background: var(--bg-panel-solid);
+  box-shadow: var(--dialog-shadow);
   display: flex;
   flex-direction: column;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-secondary);
   padding: 11px 13px;
 }
 
@@ -1101,6 +1387,8 @@ button:disabled {
 
 .dialog-close-btn {
   min-width: 30px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
 }
 
 .dialog-body {
@@ -1109,6 +1397,35 @@ button:disabled {
   display: grid;
   gap: 10px;
 }
+
+.dialog-separator {
+  height: 1px;
+  background: var(--separator);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-secondary);
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+  color: var(--btn-primary-color);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  background: var(--btn-primary-bg);
+  box-shadow: 0 0 16px var(--gold-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS DIALOG
+   ═══════════════════════════════════════════════════════════════ */
 
 .settings-grid {
   grid-template-columns: 1fr 1fr;
@@ -1120,7 +1437,7 @@ button:disabled {
   display: grid;
   gap: 4px;
   font-size: 12px;
-  color: var(--fg-dim);
+  color: var(--text-secondary);
 }
 
 .settings-row {
@@ -1132,7 +1449,7 @@ button:disabled {
 }
 
 .settings-label {
-  color: var(--fg-dim);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -1140,15 +1457,19 @@ button:disabled {
   width: 100%;
   min-height: 28px;
   border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--panel-soft);
-  color: var(--fg);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
   padding: 4px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  transition: border-color 0.2s ease, background 0.3s ease;
 }
 
 .settings-grid input:focus {
-  outline: 1px solid var(--accent);
-  border-color: var(--accent);
+  outline: 1px solid var(--gold-primary);
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 12px var(--gold-glow);
 }
 
 .settings-grid input[type="checkbox"] {
@@ -1156,9 +1477,30 @@ button:disabled {
   height: 16px;
   padding: 0;
   min-height: unset;
-  accent-color: var(--accent);
+  accent-color: var(--gold-primary);
   justify-self: start;
   cursor: pointer;
+}
+
+.settings-select {
+  width: 100%;
+  min-height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.3s ease;
+  appearance: auto;
+}
+
+.settings-select:focus {
+  outline: 1px solid var(--gold-primary);
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 12px var(--gold-glow);
 }
 
 .settings-card {
@@ -1171,7 +1513,7 @@ button:disabled {
   text-align: center;
   gap: 6px;
   padding: 20px 24px 16px;
-  background: linear-gradient(to bottom, var(--tb-bg), var(--panel-bg));
+  background: linear-gradient(to bottom, var(--toolbar-bg), var(--bg-panel-solid));
   position: relative;
 }
 
@@ -1182,13 +1524,15 @@ button:disabled {
 }
 
 .settings-title {
-  color: var(--fg);
-  font-size: 20px;
+  color: var(--text-heading);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
   font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .settings-subtitle {
-  color: var(--fg-dim);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -1198,7 +1542,8 @@ button:disabled {
 }
 
 .settings-section-title {
-  color: var(--accent);
+  color: var(--text-gold);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1206,24 +1551,9 @@ button:disabled {
   margin-top: 4px;
 }
 
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--border);
-}
-
-.btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.btn-primary:hover:not(:disabled) {
-  filter: brightness(1.08);
-  background: var(--accent);
-}
+/* ═══════════════════════════════════════════════════════════════
+   ABOUT DIALOG
+   ═══════════════════════════════════════════════════════════════ */
 
 .about-card {
   width: min(430px, 96vw);
@@ -1235,7 +1565,7 @@ button:disabled {
   text-align: center;
   gap: 6px;
   padding: 22px 24px 18px;
-  background: linear-gradient(to bottom, var(--tb-bg), var(--panel-bg));
+  background: linear-gradient(to bottom, var(--toolbar-bg), var(--bg-panel-solid));
 }
 
 .about-icon {
@@ -1243,20 +1573,21 @@ button:disabled {
 }
 
 .about-title {
-  color: var(--fg);
-  font-size: 20px;
+  color: var(--text-heading);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
   font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .about-subtitle {
-  color: var(--fg-dim);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
-.about-separator,
-.dialog-separator {
+.about-separator {
   height: 1px;
-  background: var(--border);
+  background: var(--separator);
 }
 
 .about-body {
@@ -1265,17 +1596,19 @@ button:disabled {
 }
 
 .about-section {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-secondary);
   border-radius: 8px;
   padding: 10px;
+  transition: border-color 0.3s ease;
 }
 
 .about-section-title {
-  color: var(--fg-dim);
-  font-size: 11px;
+  color: var(--text-gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   margin-bottom: 8px;
 }
 
@@ -1287,38 +1620,390 @@ button:disabled {
 }
 
 .about-key {
-  color: var(--accent);
+  color: var(--text-gold);
   font-size: 12px;
   font-weight: 600;
 }
 
 .about-value {
-  color: var(--fg);
+  color: var(--text-primary);
   font-size: 12px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MAP MARKERS
+   ═══════════════════════════════════════════════════════════════ */
 
 .point-marker {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 1px solid #fff;
-  background: #0ea5e9;
+  border: 1px solid var(--marker-border);
+  background: var(--marker-bg);
   cursor: grab;
 }
 
 .dwell-marker {
-  background: #f59e0b;
-  border-color: #fef3c7;
+  background: var(--marker-dwell-bg);
+  border-color: var(--marker-dwell-border);
 }
 
 .selected-marker {
-  background: #ef4444;
+  background: var(--marker-selected-bg);
 }
 
 .transport-icon {
   font-size: 20px;
   line-height: 20px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LEAFLET DARK MODE OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+
+.leaflet-tile-pane {
+  transition: filter 0.3s ease;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--bg-panel-solid) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.leaflet-popup-tip {
+  background: var(--bg-panel-solid) !important;
+  transition: background 0.3s ease;
+}
+
+.leaflet-container .leaflet-control-attribution {
+  background: var(--bg-panel) !important;
+  color: var(--text-muted) !important;
+  font-size: 10px !important;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--text-secondary) !important;
+}
+
+.leaflet-bar a {
+  background: var(--bg-panel-solid) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-secondary) !important;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.leaflet-bar a:hover {
+  background: var(--hover-btn) !important;
+  color: var(--text-gold) !important;
+}
+
+.leaflet-bar {
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCALE BAR
+   ═══════════════════════════════════════════════════════════════ */
+
+.scale-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 400;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.scale-bar-line {
+  height: 3px;
+  min-width: 40px;
+  max-width: 200px;
+  background: var(--text-gold);
+  border-left: 2px solid var(--text-gold);
+  border-right: 2px solid var(--text-gold);
+  opacity: 0.8;
+}
+
+.scale-bar-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: var(--text-gold);
+  opacity: 0.8;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VIEW PRESETS
+   ═══════════════════════════════════════════════════════════════ */
+
+.view-presets {
+  position: absolute;
+  bottom: 48px;
+  left: 12px;
+  z-index: 400;
+  display: flex;
+  gap: 4px;
+}
+
+.view-presets.hidden {
+  display: none;
+}
+
+.view-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  min-height: unset;
+  border-radius: 6px;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-panel-solid);
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.view-preset-btn:hover {
+  background: var(--hover-btn);
+  border-color: var(--border-primary);
+  color: var(--text-gold);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.view-preset-btn:active {
+  transform: scale(0.96);
+}
+
+.view-preset-btn svg {
+  opacity: 0.7;
+}
+
+.view-preset-btn:hover svg {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEARCH BAR
+   ═══════════════════════════════════════════════════════════════ */
+
+.search-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 400;
+  display: flex;
+  gap: 4px;
+}
+
+.search-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-height: unset;
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-panel-solid);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.search-toggle-btn:hover {
+  background: var(--hover-btn);
+  border-color: var(--border-primary);
+  color: var(--text-gold);
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  gap: 4px;
+}
+
+.search-input-wrap.hidden {
+  display: none;
+}
+
+.search-input {
+  width: 260px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-panel-solid);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 0 10px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-go-btn {
+  height: 32px;
+  padding: 0 10px;
+  min-height: unset;
+  border-radius: 8px;
+  border: 1px solid var(--gold-dim);
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--text-gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.search-go-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.search-results {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  right: 0;
+  background: var(--bg-panel-solid);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 500;
+}
+
+.search-results.hidden {
+  display: none;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-secondary);
+  transition: background 0.1s ease;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: var(--hover-btn);
+  color: var(--text-primary);
+}
+
+.search-result-item svg {
+  flex-shrink: 0;
+  color: var(--text-gold);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYBOARD SHORTCUTS DIALOG
+   ═══════════════════════════════════════════════════════════════ */
+
+.shortcuts-card {
+  width: min(400px, 96vw);
+}
+
+.shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.shortcuts-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-gold);
+}
+
+.shortcuts-close {
+  position: static;
+}
+
+.shortcuts-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.shortcut-group-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.shortcut-row kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 3px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-gold);
+  background: var(--hover-accent);
+  border: 1px solid var(--border-secondary);
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
 
 /* ── Tablet / vertical layout (≤ 900px) ── */
 @media (max-width: 900px) {
@@ -1358,14 +2043,14 @@ button:disabled {
     height: 260px;
     flex-shrink: 0;
     border-left: none;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-secondary);
     transition: height 0.25s ease, border-color 0.25s ease;
   }
 
   .right-panel.collapsed {
     width: 100%;
     height: 28px;
-    border-left-color: var(--border);
+    border-left-color: var(--border-secondary);
     overflow: hidden;
   }
 
@@ -1378,11 +2063,11 @@ button:disabled {
     width: 100%;
     height: 28px;
     border: none;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-secondary);
     border-radius: 0;
     min-height: unset;
     min-width: unset;
-    background: var(--panel-bg);
+    background: var(--bg-panel-solid);
   }
 
   /* Chevron: down arrow (panel open → click to collapse) */
@@ -1458,11 +2143,15 @@ button:disabled {
         <div class="toolbar-subtitle">Track visualization, cleanup, and editing</div>
       </div>
       <div class="toolbar-controls">
+        <button id="themeToggleBtn" class="theme-toggle" type="button" title="Toggle dark/light theme" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="4"/><path d="M10 1v2M10 17v2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M1 10h2M17 10h2M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+        </button>
         <label class="file-label" for="fileInput" accesskey="o" title="Open file (Alt+O)">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v1H1V3.5zM1 7v5a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 15 12V7H1z"/></svg>
           Open
         </label>
-        <input id="fileInput" type="file" accept=".gpx,.kml,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/json,text/xml,application/xml,text/json" />
+        <input id="fileInput" type="file" accept=".gpx,.kml,.kmz,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz,application/json,text/xml,application/xml,text/json" />
         <button id="exportBtn" disabled title="Export edited track as GPX">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Export GPX
@@ -1499,7 +2188,45 @@ button:disabled {
         <div id="map"></div>
         <div id="mapEmptyState" class="map-empty-state" aria-hidden="true">
           <div class="map-empty-title">No track loaded</div>
-          <div class="map-empty-body">Drag a file here or click <strong>Open</strong> to import a GPX, KML, or Polarsteps JSON file.</div>
+          <div class="map-empty-body">Drag a file here or click <strong>Open</strong> to import a GPX, KML, KMZ, or Polarsteps JSON file.</div>
+        </div>
+
+        <!-- Scale Bar (bottom-left) -->
+        <div id="scaleBar" class="scale-bar" aria-hidden="true">
+          <div class="scale-bar-line"></div>
+          <div class="scale-bar-label" id="scaleBarLabel"></div>
+        </div>
+
+        <!-- View Presets (bottom-left, above scale bar) -->
+        <div id="viewPresets" class="view-presets hidden">
+          <button class="view-preset-btn" data-preset="full" title="Full Track">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
+            <span>Full</span>
+          </button>
+          <button class="view-preset-btn" data-preset="start" title="Jump to Start">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-8 3V3.5L6.5 8z"/></svg>
+            <span>Start</span>
+          </button>
+          <button class="view-preset-btn" data-preset="end" title="Jump to End">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-3v7.5L13.5 8z"/></svg>
+            <span>End</span>
+          </button>
+          <button class="view-preset-btn" data-preset="highest" title="Highest Point">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 0l8 16H0z"/></svg>
+            <span>Top</span>
+          </button>
+        </div>
+
+        <!-- Search Bar (top-left, below toolbar) -->
+        <div id="searchBar" class="search-bar">
+          <button id="searchToggleBtn" class="search-toggle-btn" type="button" title="Search coordinates (Ctrl+F)">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+          </button>
+          <div id="searchInputWrap" class="search-input-wrap hidden">
+            <input id="searchInput" type="text" class="search-input" placeholder="lat, lng or place name..." />
+            <button id="searchGoBtn" class="search-go-btn" type="button">Go</button>
+            <div id="searchResults" class="search-results hidden"></div>
+          </div>
         </div>
       </main>
 
@@ -1593,8 +2320,14 @@ button:disabled {
 
         <div class="settings-section-title">Map</div>
         <div class="settings-grid">
-          <label class="settings-row"><span class="settings-label">Use CARTO Voyager</span>
-            <input id="settingUseCarto" type="checkbox" />
+          <label class="settings-row"><span class="settings-label">Map Source</span>
+            <select id="settingMapSource" class="settings-select">
+              <option value="osm">OpenStreetMap</option>
+              <option value="carto-dark">CARTO Dark Matter</option>
+              <option value="carto-voyager">CARTO Voyager</option>
+              <option value="carto-light">CARTO Positron</option>
+              <option value="satellite">ArcGIS Satellite</option>
+            </select>
           </label>
         </div>
       </form>
@@ -1625,7 +2358,7 @@ button:disabled {
         <div class="about-section">
           <div class="about-section-title">Formats</div>
           <div class="about-grid">
-            <div class="about-key">Import</div><div class="about-value">GPX, KML, Polarsteps JSON</div>
+            <div class="about-key">Import</div><div class="about-value">GPX, KML, KMZ, Polarsteps JSON</div>
             <div class="about-key">Export</div><div class="about-value">Optimized GPX</div>
           </div>
         </div>
@@ -1660,6 +2393,38 @@ button:disabled {
 
       <div class="dialog-footer">
         <button id="aboutCloseBtn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="shortcutsDialog" class="dialog-overlay" hidden>
+    <div class="dialog-card shortcuts-card" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+      <div class="shortcuts-header">
+        <div class="shortcuts-title">Keyboard Shortcuts</div>
+        <button id="shortcutsCloseBtn" type="button" class="dialog-close-btn shortcuts-close">✕</button>
+      </div>
+      <div class="dialog-separator"></div>
+      <div class="shortcuts-body">
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">File</div>
+          <div class="shortcut-row"><kbd>Ctrl+O</kbd><span>Open file</span></div>
+          <div class="shortcut-row"><kbd>Ctrl+Z</kbd><span>Undo</span></div>
+          <div class="shortcut-row"><kbd>Ctrl+Y</kbd><span>Redo</span></div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">Navigation</div>
+          <div class="shortcut-row"><kbd>Ctrl+F</kbd><span>Search coordinates</span></div>
+          <div class="shortcut-row"><kbd>1</kbd><span>Full track view</span></div>
+          <div class="shortcut-row"><kbd>2</kbd><span>Jump to start</span></div>
+          <div class="shortcut-row"><kbd>3</kbd><span>Jump to end</span></div>
+          <div class="shortcut-row"><kbd>4</kbd><span>Highest point</span></div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">UI</div>
+          <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+          <div class="shortcut-row"><kbd>P</kbd><span>Toggle side panel</span></div>
+          <div class="shortcut-row"><kbd>Esc</kbd><span>Close dialog</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1713,7 +2478,9 @@ function toStoredLon(lon) {
   return lon > 180 ? lon - 360 : lon < -180 ? lon + 360 : lon;
 }
 
-let settings = {
+const SETTINGS_KEY = 'gpxviewer-settings';
+
+const defaultSettings = {
   maxAllowedSpeedKmh: 30,
   stationaryRadiusMeters: 150,
   longGapMeters: 100,
@@ -1723,8 +2490,27 @@ let settings = {
   dwellMinMs: 3600000,
   flightDistanceKm: 600,
   flightSpeedKmh: 250,
-  useCarto: false
+  mapSource: 'carto-dark'
 };
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { ...defaultSettings };
+    const parsed = JSON.parse(raw);
+    return { ...defaultSettings, ...parsed };
+  } catch {
+    return { ...defaultSettings };
+  }
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {}
+}
+
+let settings = loadSettings();
 
 const fileInputEl = document.getElementById('fileInput');
 const exportBtnEl = document.getElementById('exportBtn');
@@ -1758,9 +2544,52 @@ const settingRemoveRedundantPointsEl = document.getElementById('settingRemoveRed
 const settingDwellMinHoursEl = document.getElementById('settingDwellMinHours');
 const settingFlightDistanceKmEl = document.getElementById('settingFlightDistanceKm');
 const settingFlightSpeedKmhEl = document.getElementById('settingFlightSpeedKmh');
-const settingUseCartoEl = document.getElementById('settingUseCarto');
+const settingMapSourceEl = document.getElementById('settingMapSource');
+const themeToggleBtnEl = document.getElementById('themeToggleBtn');
+const scaleBarEl = document.getElementById('scaleBar');
+const scaleBarLabelEl = document.getElementById('scaleBarLabel');
+const viewPresetsEl = document.getElementById('viewPresets');
+const searchToggleBtnEl = document.getElementById('searchToggleBtn');
+const searchInputWrapEl = document.getElementById('searchInputWrap');
+const searchInputEl = document.getElementById('searchInput');
+const searchGoBtnEl = document.getElementById('searchGoBtn');
+const searchResultsEl = document.getElementById('searchResults');
+const shortcutsDialogEl = document.getElementById('shortcutsDialog');
+const shortcutsCloseBtnEl = document.getElementById('shortcutsCloseBtn');
+const searchBarEl = document.getElementById('searchBar');
 
 let trackMouseMoveHandler = null;
+
+// ── Theme Management ──
+const THEME_KEY = 'gpxviewer-theme';
+
+function getPreferredTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored) return stored;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  localStorage.setItem(THEME_KEY, theme);
+  // Re-init map tiles for dark/light mode if map exists
+  if (appState.map) {
+    setTileLayer(settings.mapSource);
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+}
+
+// Apply saved theme immediately
+applyTheme(getPreferredTheme());
 
 initMap();
 wireEvents();
@@ -1773,15 +2602,17 @@ if (window.matchMedia('(max-width: 900px)').matches) {
 
 function initMap() {
   appState.map = L.map('map', { preferCanvas: true }).setView([25.03, 121.56], 7);
-  appState.layers.baseTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors',
-    crossOrigin: 'anonymous'
-  }).addTo(appState.map);
 
   appState.layers.track = L.layerGroup().addTo(appState.map);
   appState.layers.points = L.layerGroup().addTo(appState.map);
   appState.layers.transport = L.layerGroup().addTo(appState.map);
+
+  setTileLayer(settings.mapSource);
+
+  appState.map.on('zoomend moveend', updateScaleBar);
+  appState.map.on('zoomend moveend', updateViewPresetsVisibility);
+  updateScaleBar();
+  updateViewPresetsVisibility();
 
   appState.map.on('zoomend', () => {
     if (appState.optimizedPoints.length) {
@@ -1876,10 +2707,19 @@ function wireEvents() {
   });
 
   window.addEventListener('keydown', (event) => {
+    // Ignore shortcuts when typing in inputs
+    const tag = (event.target)?.tagName;
+    const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
     if (event.key === 'Escape') {
       closeDialog(settingsDialogEl);
       closeDialog(aboutDialogEl);
+      shortcutsDialogEl.hidden = true;
+      searchInputWrapEl.classList.add('hidden');
+      searchResultsEl.classList.add('hidden');
+      return;
     }
+
     if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
       event.preventDefault();
       fileInputEl.click();
@@ -1892,6 +2732,25 @@ function wireEvents() {
       event.preventDefault();
       redoEdit();
     }
+    if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+      event.preventDefault();
+      searchInputWrapEl.classList.remove('hidden');
+      searchInputEl.focus();
+      return;
+    }
+
+    if (isInput) return;
+
+    if (event.key === '?') {
+      shortcutsDialogEl.hidden = !shortcutsDialogEl.hidden;
+    }
+    if (event.key === 'p' || event.key === 'P') {
+      panelCollapseBtnEl.click();
+    }
+    if (event.key === '1') navigateToPreset('full');
+    if (event.key === '2') navigateToPreset('start');
+    if (event.key === '3') navigateToPreset('end');
+    if (event.key === '4') navigateToPreset('highest');
   });
 
   mapWrapEl.addEventListener('dragover', (event) => {
@@ -1925,6 +2784,8 @@ function wireEvents() {
 
   copyMapBtnEl.addEventListener('click', copyMapToClipboard);
 
+  themeToggleBtnEl.addEventListener('click', toggleTheme);
+
   document.addEventListener('click', () => {
     hidePointContextMenu();
   });
@@ -1940,6 +2801,189 @@ function wireEvents() {
   appState.map.on('contextmenu', () => {
     hidePointContextMenu();
   });
+
+  // ── Keyboard shortcuts ──
+  shortcutsCloseBtnEl.addEventListener('click', () => {
+    shortcutsDialogEl.hidden = true;
+  });
+  shortcutsDialogEl.addEventListener('click', (event) => {
+    if (event.target === shortcutsDialogEl) shortcutsDialogEl.hidden = true;
+  });
+
+  // ── View presets ──
+  viewPresetsEl.addEventListener('click', (event) => {
+    const btn = event.target.closest('.view-preset-btn');
+    if (!btn) return;
+    navigateToPreset(btn.dataset.preset);
+  });
+
+  // ── Search bar ──
+  searchToggleBtnEl.addEventListener('click', () => {
+    searchInputWrapEl.classList.toggle('hidden');
+    if (!searchInputWrapEl.classList.contains('hidden')) {
+      searchInputEl.focus();
+    } else {
+      searchResultsEl.classList.add('hidden');
+      searchInputEl.value = '';
+    }
+  });
+
+  searchGoBtnEl.addEventListener('click', () => {
+    executeSearch(searchInputEl.value);
+  });
+
+  searchInputEl.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      executeSearch(searchInputEl.value);
+    }
+    if (event.key === 'Escape') {
+      searchInputWrapEl.classList.add('hidden');
+      searchResultsEl.classList.add('hidden');
+    }
+  });
+
+  searchInputEl.addEventListener('input', () => {
+    const val = searchInputEl.value.trim();
+    if (!val) { searchResultsEl.classList.add('hidden'); return; }
+    // If it looks like coordinates, show immediate match
+    const coordMatch = val.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        searchResultsEl.innerHTML = `<div class="search-result-item" data-lat="${lat}" data-lng="${lng}">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+          <span>${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+        </div>`;
+        searchResultsEl.classList.remove('hidden');
+        return;
+      }
+    }
+    searchResultsEl.classList.add('hidden');
+  });
+
+  searchResultsEl.addEventListener('click', (event) => {
+    const item = event.target.closest('.search-result-item');
+    if (!item) return;
+    const lat = parseFloat(item.dataset.lat);
+    const lng = parseFloat(item.dataset.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      appState.map.setView([lat, lng], 14);
+    }
+    searchResultsEl.classList.add('hidden');
+    searchInputWrapEl.classList.add('hidden');
+    searchInputEl.value = '';
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!searchBarEl.contains(event.target)) {
+      searchResultsEl.classList.add('hidden');
+    }
+  });
+}
+
+function navigateToPreset(preset) {
+  if (!appState.optimizedPoints.length) return;
+  const points = appState.optimizedPoints;
+
+  if (preset === 'full') {
+    const lats = points.map(p => p.lat);
+    const lons = points.map(p => displayLon(points[0]));
+    const displayLons = points.map(p => displayLon(p));
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...displayLons), maxLon = Math.max(...displayLons);
+    appState.map.fitBounds([[minLat, minLon], [maxLat, maxLon]], { padding: [40, 40] });
+  } else if (preset === 'start') {
+    appState.map.setView([points[0].lat, displayLon(points[0])], 14);
+  } else if (preset === 'end') {
+    const last = points[points.length - 1];
+    appState.map.setView([last.lat, displayLon(last)], 14);
+  } else if (preset === 'highest') {
+    const highest = points.reduce((best, p) => (Number(p.ele) || 0) > (Number(best.ele) || 0) ? p : best, points[0]);
+    appState.map.setView([highest.lat, displayLon(highest)], 14);
+  }
+}
+
+function updateViewPresetsVisibility() {
+  if (appState.optimizedPoints.length >= 2) {
+    viewPresetsEl.classList.remove('hidden');
+  } else {
+    viewPresetsEl.classList.add('hidden');
+  }
+}
+
+function updateScaleBar() {
+  if (!appState.map) return;
+  const zoom = appState.map.getZoom();
+  const center = appState.map.getCenter();
+  const latRad = center.lat * Math.PI / 180;
+  const metersPerPx = 156543.03392 * Math.cos(latRad) / Math.pow(2, zoom);
+
+  // Target ~100px width for the scale bar
+  const targetPx = 100;
+  const meters = metersPerPx * targetPx;
+
+  // Pick best human-readable step
+  const steps = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000];
+  let best = steps[0];
+  for (const step of steps) {
+    if (step <= meters) best = step;
+  }
+
+  const barWidth = Math.round(best / metersPerPx);
+  const label = best >= 1000 ? `${(best / 1000).toFixed(best % 1000 === 0 ? 0 : 1)} km` : `${best} m`;
+
+  const line = scaleBarEl.querySelector('.scale-bar-line');
+  line.style.width = `${barWidth}px`;
+  scaleBarLabelEl.textContent = label;
+}
+
+let searchDebounce = null;
+function executeSearch(query) {
+  if (!query || !query.trim()) return;
+
+  // Try coordinates first
+  const coordMatch = query.trim().match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1]);
+    const lng = parseFloat(coordMatch[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      appState.map.setView([lat, lng], 14);
+      setStatus(`Navigated to ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      return;
+    }
+  }
+
+  // Geocode via Nominatim
+  setStatus('Searching...');
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`, {
+        headers: { 'Accept-Language': 'en' }
+      });
+      if (!res.ok) throw new Error('Search failed');
+      const results = await res.json();
+      if (!results.length) {
+        setStatus('No results found.');
+        return;
+      }
+      searchResultsEl.innerHTML = results.map(r => {
+        const lat = parseFloat(r.lat);
+        const lng = parseFloat(r.lon);
+        const name = r.display_name.split(',').slice(0, 2).join(',');
+        return `<div class="search-result-item" data-lat="${lat}" data-lng="${lng}">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+          <span>${name}</span>
+        </div>`;
+      }).join('');
+      searchResultsEl.classList.remove('hidden');
+      setStatus(`Found ${results.length} result${results.length > 1 ? 's' : ''}.`);
+    } catch (err) {
+      setStatus(`Search error: ${err.message}`);
+    }
+  }, 350);
 }
 
 function openDialog(dialogElement) {
@@ -1950,21 +2994,36 @@ function closeDialog(dialogElement) {
   dialogElement.hidden = true;
 }
 
-function setTileLayer(useCarto) {
+function setTileLayer(mapSource) {
   if (appState.layers.baseTile) {
     appState.map.removeLayer(appState.layers.baseTile);
   }
-  if (useCarto) {
-    appState.layers.baseTile = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
-    ).addTo(appState.map);
-  } else {
-    appState.layers.baseTile = L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', crossOrigin: 'anonymous' }
-    ).addTo(appState.map);
-  }
+
+  const sources = {
+    'osm': {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      options: { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', crossOrigin: 'anonymous' }
+    },
+    'carto-dark': {
+      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+    },
+    'carto-voyager': {
+      url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+    },
+    'carto-light': {
+      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+    },
+    'satellite': {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      options: { maxZoom: 18, attribution: '&copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, DeLorme, NAVTEQ', crossOrigin: 'anonymous' }
+    }
+  };
+
+  const source = sources[mapSource] || sources['carto-dark'];
+  appState.layers.baseTile = L.tileLayer(source.url, source.options).addTo(appState.map);
 }
 
 function populateSettingsForm() {
@@ -1977,7 +3036,7 @@ function populateSettingsForm() {
   settingDwellMinHoursEl.value = (settings.dwellMinMs / MS_PER_HOUR).toFixed(2);
   settingFlightDistanceKmEl.value = settings.flightDistanceKm;
   settingFlightSpeedKmhEl.value = settings.flightSpeedKmh;
-  settingUseCartoEl.checked = settings.useCarto;
+  settingMapSourceEl.value = settings.mapSource || 'carto-dark';
 }
 
 function saveSettingsFromForm() {
@@ -1991,10 +3050,10 @@ function saveSettingsFromForm() {
     dwellMinMs: Number(settingDwellMinHoursEl.value) * MS_PER_HOUR,
     flightDistanceKm: Number(settingFlightDistanceKmEl.value),
     flightSpeedKmh: Number(settingFlightSpeedKmhEl.value),
-    useCarto: settingUseCartoEl.checked
+    mapSource: settingMapSourceEl.value
   };
 
-  const { bezierFillGaps: _bfg, removeRedundantPoints: _rrp, useCarto: _uc, ...numericSettings } = nextSettings;
+  const { bezierFillGaps: _bfg, removeRedundantPoints: _rrp, mapSource: _ms, ...numericSettings } = nextSettings;
   const invalid = Object.values(numericSettings).some((value) => !Number.isFinite(value) || value <= 0);
   if (invalid) {
     setStatus('Invalid settings values. Please use numbers greater than 0.');
@@ -2002,7 +3061,8 @@ function saveSettingsFromForm() {
   }
 
   settings = { ...settings, ...nextSettings };
-  setTileLayer(settings.useCarto);
+  saveSettings();
+  setTileLayer(settings.mapSource);
   closeDialog(settingsDialogEl);
 
   if (appState.rawPoints.length >= 2) {
@@ -2026,26 +3086,34 @@ function saveSettingsFromForm() {
 async function handleImport(file) {
   try {
     setStatus(`Loading ${file.name}...`);
-    const text = await file.text();
     const ext = file.name.toLowerCase().split('.').pop();
 
     let rawPoints;
     let skipOptimize = false;
     let embeddedSettings = null;
     if (ext === 'gpx') {
+      const text = await file.text();
       const parsed = parseGpx(text);
       rawPoints = parsed.points;
       embeddedSettings = parsed.embeddedSettings;
       skipOptimize = parsed.creator === 'GPXViewer';
     } else if (ext === 'kml') {
+      const text = await file.text();
       const parsed = parseKml(text);
       rawPoints = parsed.points;
       embeddedSettings = parsed.embeddedSettings;
       if (embeddedSettings) skipOptimize = true;
+    } else if (ext === 'kmz') {
+      const kmlText = await extractKmlFromKmz(file);
+      const parsed = parseKml(kmlText);
+      rawPoints = parsed.points;
+      embeddedSettings = parsed.embeddedSettings;
+      if (embeddedSettings) skipOptimize = true;
     } else if (ext === 'json') {
+      const text = await file.text();
       rawPoints = parsePolarstepsJson(text);
     } else {
-      throw new Error('Unsupported file format. Please use .gpx, .kml, or Polarsteps .json');
+      throw new Error('Unsupported file format. Please use .gpx, .kml, .kmz, or Polarsteps .json');
     }
 
     if (rawPoints.length < 2) {
@@ -2054,6 +3122,7 @@ async function handleImport(file) {
 
     if (embeddedSettings) {
       settings = { ...settings, ...embeddedSettings };
+      saveSettings();
       populateSettingsForm();
     }
 
@@ -2423,6 +3492,95 @@ function parseKml(xmlText) {
     })
     .filter(Boolean);
   return { points, embeddedSettings };
+}
+
+async function extractKmlFromKmz(file) {
+  const buffer = await file.arrayBuffer();
+  const view = new DataView(buffer);
+
+  // Find End of Central Directory record by scanning backwards for signature 0x06054b50
+  let eocdOffset = -1;
+  for (let i = buffer.byteLength - 22; i >= Math.max(0, buffer.byteLength - 65557); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocdOffset = i;
+      break;
+    }
+  }
+  if (eocdOffset < 0) throw new Error('Invalid KMZ file: missing ZIP end-of-central-directory');
+
+  const cdOffset = view.getUint32(eocdOffset + 16, true);
+  const cdSize = view.getUint32(eocdOffset + 12, true);
+
+  // Scan Central Directory for .kml files
+  let offset = cdOffset;
+  const end = cdOffset + cdSize;
+  const candidates = [];
+
+  while (offset + 46 <= end) {
+    if (view.getUint32(offset, true) !== 0x02014b50) break;
+
+    const compressionMethod = view.getUint16(offset + 10, true);
+    const compressedSize = view.getUint32(offset + 20, true);
+    const uncompressedSize = view.getUint32(offset + 24, true);
+    const nameLen = view.getUint16(offset + 28, true);
+    const extraLen = view.getUint16(offset + 30, true);
+    const commentLen = view.getUint16(offset + 32, true);
+    const localHeaderOffset = view.getUint32(offset + 42, true);
+
+    const nameBytes = new Uint8Array(buffer, offset + 46, nameLen);
+    const name = new TextDecoder().decode(nameBytes);
+
+    if (name.toLowerCase().endsWith('.kml')) {
+      const score = name.toLowerCase().includes('doc.kml') ? 2 : (name.toLowerCase().includes('kml/') ? 1 : 0);
+      candidates.push({ name, compressionMethod, compressedSize, uncompressedSize, localHeaderOffset, score });
+    }
+
+    offset += 46 + nameLen + extraLen + commentLen;
+  }
+
+  if (!candidates.length) throw new Error('KMZ file does not contain a KML file');
+
+  candidates.sort((a, b) => b.score - a.score);
+  const entry = candidates[0];
+
+  // Read local file header to get data offset
+  const lNameLen = view.getUint16(entry.localHeaderOffset + 26, true);
+  const lExtraLen = view.getUint16(entry.localHeaderOffset + 28, true);
+  const dataOffset = entry.localHeaderOffset + 30 + lNameLen + lExtraLen;
+
+  const rawData = new Uint8Array(buffer, dataOffset, entry.compressedSize);
+
+  if (entry.compressionMethod === 0) {
+    return new TextDecoder().decode(rawData);
+  }
+
+  // Deflate decompression using DecompressionStream
+  if (typeof DecompressionStream === 'undefined') {
+    throw new Error('KMZ support requires a browser with DecompressionStream API');
+  }
+
+  const ds = new DecompressionStream('deflate-raw');
+  const writer = ds.writable.getWriter();
+  writer.write(rawData);
+  writer.close();
+
+  const reader = ds.readable.getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+
+  const totalLen = chunks.reduce((s, c) => s + c.length, 0);
+  const result = new Uint8Array(totalLen);
+  let pos = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, pos);
+    pos += chunk.length;
+  }
+
+  return new TextDecoder().decode(result);
 }
 
 function optimizePoints(rawPoints) {

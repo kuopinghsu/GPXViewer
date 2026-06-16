@@ -20,11 +20,15 @@
         <div class="toolbar-subtitle">Track visualization, cleanup, and editing</div>
       </div>
       <div class="toolbar-controls">
+        <button id="themeToggleBtn" class="theme-toggle" type="button" title="Toggle dark/light theme" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="4"/><path d="M10 1v2M10 17v2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M1 10h2M17 10h2M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+        </button>
         <label class="file-label" for="fileInput" accesskey="o" title="Open file (Alt+O)">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v1H1V3.5zM1 7v5a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 15 12V7H1z"/></svg>
           Open
         </label>
-        <input id="fileInput" type="file" accept=".gpx,.kml,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/json,text/xml,application/xml,text/json" />
+        <input id="fileInput" type="file" accept=".gpx,.kml,.kmz,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz,application/json,text/xml,application/xml,text/json" />
         <button id="exportBtn" disabled title="Export edited track as GPX">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Export GPX
@@ -61,7 +65,45 @@
         <div id="map"></div>
         <div id="mapEmptyState" class="map-empty-state" aria-hidden="true">
           <div class="map-empty-title">No track loaded</div>
-          <div class="map-empty-body">Drag a file here or click <strong>Open</strong> to import a GPX, KML, or Polarsteps JSON file.</div>
+          <div class="map-empty-body">Drag a file here or click <strong>Open</strong> to import a GPX, KML, KMZ, or Polarsteps JSON file.</div>
+        </div>
+
+        <!-- Scale Bar (bottom-left) -->
+        <div id="scaleBar" class="scale-bar" aria-hidden="true">
+          <div class="scale-bar-line"></div>
+          <div class="scale-bar-label" id="scaleBarLabel"></div>
+        </div>
+
+        <!-- View Presets (bottom-left, above scale bar) -->
+        <div id="viewPresets" class="view-presets hidden">
+          <button class="view-preset-btn" data-preset="full" title="Full Track">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
+            <span>Full</span>
+          </button>
+          <button class="view-preset-btn" data-preset="start" title="Jump to Start">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-8 3V3.5L6.5 8z"/></svg>
+            <span>Start</span>
+          </button>
+          <button class="view-preset-btn" data-preset="end" title="Jump to End">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-3v7.5L13.5 8z"/></svg>
+            <span>End</span>
+          </button>
+          <button class="view-preset-btn" data-preset="highest" title="Highest Point">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 0l8 16H0z"/></svg>
+            <span>Top</span>
+          </button>
+        </div>
+
+        <!-- Search Bar (top-left, below toolbar) -->
+        <div id="searchBar" class="search-bar">
+          <button id="searchToggleBtn" class="search-toggle-btn" type="button" title="Search coordinates (Ctrl+F)">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+          </button>
+          <div id="searchInputWrap" class="search-input-wrap hidden">
+            <input id="searchInput" type="text" class="search-input" placeholder="lat, lng or place name..." />
+            <button id="searchGoBtn" class="search-go-btn" type="button">Go</button>
+            <div id="searchResults" class="search-results hidden"></div>
+          </div>
         </div>
       </main>
 
@@ -155,8 +197,14 @@
 
         <div class="settings-section-title">Map</div>
         <div class="settings-grid">
-          <label class="settings-row"><span class="settings-label">Use CARTO Voyager</span>
-            <input id="settingUseCarto" type="checkbox" />
+          <label class="settings-row"><span class="settings-label">Map Source</span>
+            <select id="settingMapSource" class="settings-select">
+              <option value="osm">OpenStreetMap</option>
+              <option value="carto-dark">CARTO Dark Matter</option>
+              <option value="carto-voyager">CARTO Voyager</option>
+              <option value="carto-light">CARTO Positron</option>
+              <option value="satellite">ArcGIS Satellite</option>
+            </select>
           </label>
         </div>
       </form>
@@ -187,7 +235,7 @@
         <div class="about-section">
           <div class="about-section-title">Formats</div>
           <div class="about-grid">
-            <div class="about-key">Import</div><div class="about-value">GPX, KML, Polarsteps JSON</div>
+            <div class="about-key">Import</div><div class="about-value">GPX, KML, KMZ, Polarsteps JSON</div>
             <div class="about-key">Export</div><div class="about-value">Optimized GPX</div>
           </div>
         </div>
@@ -222,6 +270,38 @@
 
       <div class="dialog-footer">
         <button id="aboutCloseBtn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="shortcutsDialog" class="dialog-overlay" hidden>
+    <div class="dialog-card shortcuts-card" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+      <div class="shortcuts-header">
+        <div class="shortcuts-title">Keyboard Shortcuts</div>
+        <button id="shortcutsCloseBtn" type="button" class="dialog-close-btn shortcuts-close">✕</button>
+      </div>
+      <div class="dialog-separator"></div>
+      <div class="shortcuts-body">
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">File</div>
+          <div class="shortcut-row"><kbd>Ctrl+O</kbd><span>Open file</span></div>
+          <div class="shortcut-row"><kbd>Ctrl+Z</kbd><span>Undo</span></div>
+          <div class="shortcut-row"><kbd>Ctrl+Y</kbd><span>Redo</span></div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">Navigation</div>
+          <div class="shortcut-row"><kbd>Ctrl+F</kbd><span>Search coordinates</span></div>
+          <div class="shortcut-row"><kbd>1</kbd><span>Full track view</span></div>
+          <div class="shortcut-row"><kbd>2</kbd><span>Jump to start</span></div>
+          <div class="shortcut-row"><kbd>3</kbd><span>Jump to end</span></div>
+          <div class="shortcut-row"><kbd>4</kbd><span>Highest point</span></div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">UI</div>
+          <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+          <div class="shortcut-row"><kbd>P</kbd><span>Toggle side panel</span></div>
+          <div class="shortcut-row"><kbd>Esc</kbd><span>Close dialog</span></div>
+        </div>
       </div>
     </div>
   </div>

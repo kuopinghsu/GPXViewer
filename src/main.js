@@ -38,7 +38,9 @@ function toStoredLon(lon) {
   return lon > 180 ? lon - 360 : lon < -180 ? lon + 360 : lon;
 }
 
-let settings = {
+const SETTINGS_KEY = 'gpxviewer-settings';
+
+const defaultSettings = {
   maxAllowedSpeedKmh: 30,
   stationaryRadiusMeters: 150,
   longGapMeters: 100,
@@ -48,8 +50,27 @@ let settings = {
   dwellMinMs: 3600000,
   flightDistanceKm: 600,
   flightSpeedKmh: 250,
-  useCarto: false
+  mapSource: 'carto-dark'
 };
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { ...defaultSettings };
+    const parsed = JSON.parse(raw);
+    return { ...defaultSettings, ...parsed };
+  } catch {
+    return { ...defaultSettings };
+  }
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {}
+}
+
+let settings = loadSettings();
 
 const fileInputEl = document.getElementById('fileInput');
 const exportBtnEl = document.getElementById('exportBtn');
@@ -83,9 +104,52 @@ const settingRemoveRedundantPointsEl = document.getElementById('settingRemoveRed
 const settingDwellMinHoursEl = document.getElementById('settingDwellMinHours');
 const settingFlightDistanceKmEl = document.getElementById('settingFlightDistanceKm');
 const settingFlightSpeedKmhEl = document.getElementById('settingFlightSpeedKmh');
-const settingUseCartoEl = document.getElementById('settingUseCarto');
+const settingMapSourceEl = document.getElementById('settingMapSource');
+const themeToggleBtnEl = document.getElementById('themeToggleBtn');
+const scaleBarEl = document.getElementById('scaleBar');
+const scaleBarLabelEl = document.getElementById('scaleBarLabel');
+const viewPresetsEl = document.getElementById('viewPresets');
+const searchToggleBtnEl = document.getElementById('searchToggleBtn');
+const searchInputWrapEl = document.getElementById('searchInputWrap');
+const searchInputEl = document.getElementById('searchInput');
+const searchGoBtnEl = document.getElementById('searchGoBtn');
+const searchResultsEl = document.getElementById('searchResults');
+const shortcutsDialogEl = document.getElementById('shortcutsDialog');
+const shortcutsCloseBtnEl = document.getElementById('shortcutsCloseBtn');
+const searchBarEl = document.getElementById('searchBar');
 
 let trackMouseMoveHandler = null;
+
+// ── Theme Management ──
+const THEME_KEY = 'gpxviewer-theme';
+
+function getPreferredTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored) return stored;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  localStorage.setItem(THEME_KEY, theme);
+  // Re-init map tiles for dark/light mode if map exists
+  if (appState.map) {
+    setTileLayer(settings.mapSource);
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+}
+
+// Apply saved theme immediately
+applyTheme(getPreferredTheme());
 
 initMap();
 wireEvents();
@@ -98,15 +162,17 @@ if (window.matchMedia('(max-width: 900px)').matches) {
 
 function initMap() {
   appState.map = L.map('map', { preferCanvas: true }).setView([25.03, 121.56], 7);
-  appState.layers.baseTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors',
-    crossOrigin: 'anonymous'
-  }).addTo(appState.map);
 
   appState.layers.track = L.layerGroup().addTo(appState.map);
   appState.layers.points = L.layerGroup().addTo(appState.map);
   appState.layers.transport = L.layerGroup().addTo(appState.map);
+
+  setTileLayer(settings.mapSource);
+
+  appState.map.on('zoomend moveend', updateScaleBar);
+  appState.map.on('zoomend moveend', updateViewPresetsVisibility);
+  updateScaleBar();
+  updateViewPresetsVisibility();
 
   appState.map.on('zoomend', () => {
     if (appState.optimizedPoints.length) {
@@ -201,10 +267,19 @@ function wireEvents() {
   });
 
   window.addEventListener('keydown', (event) => {
+    // Ignore shortcuts when typing in inputs
+    const tag = (event.target)?.tagName;
+    const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
     if (event.key === 'Escape') {
       closeDialog(settingsDialogEl);
       closeDialog(aboutDialogEl);
+      shortcutsDialogEl.hidden = true;
+      searchInputWrapEl.classList.add('hidden');
+      searchResultsEl.classList.add('hidden');
+      return;
     }
+
     if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
       event.preventDefault();
       fileInputEl.click();
@@ -217,6 +292,25 @@ function wireEvents() {
       event.preventDefault();
       redoEdit();
     }
+    if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+      event.preventDefault();
+      searchInputWrapEl.classList.remove('hidden');
+      searchInputEl.focus();
+      return;
+    }
+
+    if (isInput) return;
+
+    if (event.key === '?') {
+      shortcutsDialogEl.hidden = !shortcutsDialogEl.hidden;
+    }
+    if (event.key === 'p' || event.key === 'P') {
+      panelCollapseBtnEl.click();
+    }
+    if (event.key === '1') navigateToPreset('full');
+    if (event.key === '2') navigateToPreset('start');
+    if (event.key === '3') navigateToPreset('end');
+    if (event.key === '4') navigateToPreset('highest');
   });
 
   mapWrapEl.addEventListener('dragover', (event) => {
@@ -250,6 +344,8 @@ function wireEvents() {
 
   copyMapBtnEl.addEventListener('click', copyMapToClipboard);
 
+  themeToggleBtnEl.addEventListener('click', toggleTheme);
+
   document.addEventListener('click', () => {
     hidePointContextMenu();
   });
@@ -265,6 +361,189 @@ function wireEvents() {
   appState.map.on('contextmenu', () => {
     hidePointContextMenu();
   });
+
+  // ── Keyboard shortcuts ──
+  shortcutsCloseBtnEl.addEventListener('click', () => {
+    shortcutsDialogEl.hidden = true;
+  });
+  shortcutsDialogEl.addEventListener('click', (event) => {
+    if (event.target === shortcutsDialogEl) shortcutsDialogEl.hidden = true;
+  });
+
+  // ── View presets ──
+  viewPresetsEl.addEventListener('click', (event) => {
+    const btn = event.target.closest('.view-preset-btn');
+    if (!btn) return;
+    navigateToPreset(btn.dataset.preset);
+  });
+
+  // ── Search bar ──
+  searchToggleBtnEl.addEventListener('click', () => {
+    searchInputWrapEl.classList.toggle('hidden');
+    if (!searchInputWrapEl.classList.contains('hidden')) {
+      searchInputEl.focus();
+    } else {
+      searchResultsEl.classList.add('hidden');
+      searchInputEl.value = '';
+    }
+  });
+
+  searchGoBtnEl.addEventListener('click', () => {
+    executeSearch(searchInputEl.value);
+  });
+
+  searchInputEl.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      executeSearch(searchInputEl.value);
+    }
+    if (event.key === 'Escape') {
+      searchInputWrapEl.classList.add('hidden');
+      searchResultsEl.classList.add('hidden');
+    }
+  });
+
+  searchInputEl.addEventListener('input', () => {
+    const val = searchInputEl.value.trim();
+    if (!val) { searchResultsEl.classList.add('hidden'); return; }
+    // If it looks like coordinates, show immediate match
+    const coordMatch = val.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        searchResultsEl.innerHTML = `<div class="search-result-item" data-lat="${lat}" data-lng="${lng}">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+          <span>${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+        </div>`;
+        searchResultsEl.classList.remove('hidden');
+        return;
+      }
+    }
+    searchResultsEl.classList.add('hidden');
+  });
+
+  searchResultsEl.addEventListener('click', (event) => {
+    const item = event.target.closest('.search-result-item');
+    if (!item) return;
+    const lat = parseFloat(item.dataset.lat);
+    const lng = parseFloat(item.dataset.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      appState.map.setView([lat, lng], 14);
+    }
+    searchResultsEl.classList.add('hidden');
+    searchInputWrapEl.classList.add('hidden');
+    searchInputEl.value = '';
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!searchBarEl.contains(event.target)) {
+      searchResultsEl.classList.add('hidden');
+    }
+  });
+}
+
+function navigateToPreset(preset) {
+  if (!appState.optimizedPoints.length) return;
+  const points = appState.optimizedPoints;
+
+  if (preset === 'full') {
+    const lats = points.map(p => p.lat);
+    const lons = points.map(p => displayLon(points[0]));
+    const displayLons = points.map(p => displayLon(p));
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...displayLons), maxLon = Math.max(...displayLons);
+    appState.map.fitBounds([[minLat, minLon], [maxLat, maxLon]], { padding: [40, 40] });
+  } else if (preset === 'start') {
+    appState.map.setView([points[0].lat, displayLon(points[0])], 14);
+  } else if (preset === 'end') {
+    const last = points[points.length - 1];
+    appState.map.setView([last.lat, displayLon(last)], 14);
+  } else if (preset === 'highest') {
+    const highest = points.reduce((best, p) => (Number(p.ele) || 0) > (Number(best.ele) || 0) ? p : best, points[0]);
+    appState.map.setView([highest.lat, displayLon(highest)], 14);
+  }
+}
+
+function updateViewPresetsVisibility() {
+  if (appState.optimizedPoints.length >= 2) {
+    viewPresetsEl.classList.remove('hidden');
+  } else {
+    viewPresetsEl.classList.add('hidden');
+  }
+}
+
+function updateScaleBar() {
+  if (!appState.map) return;
+  const zoom = appState.map.getZoom();
+  const center = appState.map.getCenter();
+  const latRad = center.lat * Math.PI / 180;
+  const metersPerPx = 156543.03392 * Math.cos(latRad) / Math.pow(2, zoom);
+
+  // Target ~100px width for the scale bar
+  const targetPx = 100;
+  const meters = metersPerPx * targetPx;
+
+  // Pick best human-readable step
+  const steps = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000];
+  let best = steps[0];
+  for (const step of steps) {
+    if (step <= meters) best = step;
+  }
+
+  const barWidth = Math.round(best / metersPerPx);
+  const label = best >= 1000 ? `${(best / 1000).toFixed(best % 1000 === 0 ? 0 : 1)} km` : `${best} m`;
+
+  const line = scaleBarEl.querySelector('.scale-bar-line');
+  line.style.width = `${barWidth}px`;
+  scaleBarLabelEl.textContent = label;
+}
+
+let searchDebounce = null;
+function executeSearch(query) {
+  if (!query || !query.trim()) return;
+
+  // Try coordinates first
+  const coordMatch = query.trim().match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1]);
+    const lng = parseFloat(coordMatch[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      appState.map.setView([lat, lng], 14);
+      setStatus(`Navigated to ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      return;
+    }
+  }
+
+  // Geocode via Nominatim
+  setStatus('Searching...');
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`, {
+        headers: { 'Accept-Language': 'en' }
+      });
+      if (!res.ok) throw new Error('Search failed');
+      const results = await res.json();
+      if (!results.length) {
+        setStatus('No results found.');
+        return;
+      }
+      searchResultsEl.innerHTML = results.map(r => {
+        const lat = parseFloat(r.lat);
+        const lng = parseFloat(r.lon);
+        const name = r.display_name.split(',').slice(0, 2).join(',');
+        return `<div class="search-result-item" data-lat="${lat}" data-lng="${lng}">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+          <span>${name}</span>
+        </div>`;
+      }).join('');
+      searchResultsEl.classList.remove('hidden');
+      setStatus(`Found ${results.length} result${results.length > 1 ? 's' : ''}.`);
+    } catch (err) {
+      setStatus(`Search error: ${err.message}`);
+    }
+  }, 350);
 }
 
 function openDialog(dialogElement) {
@@ -275,21 +554,36 @@ function closeDialog(dialogElement) {
   dialogElement.hidden = true;
 }
 
-function setTileLayer(useCarto) {
+function setTileLayer(mapSource) {
   if (appState.layers.baseTile) {
     appState.map.removeLayer(appState.layers.baseTile);
   }
-  if (useCarto) {
-    appState.layers.baseTile = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
-    ).addTo(appState.map);
-  } else {
-    appState.layers.baseTile = L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', crossOrigin: 'anonymous' }
-    ).addTo(appState.map);
-  }
+
+  const sources = {
+    'osm': {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      options: { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', crossOrigin: 'anonymous' }
+    },
+    'carto-dark': {
+      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+    },
+    'carto-voyager': {
+      url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+    },
+    'carto-light': {
+      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+    },
+    'satellite': {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      options: { maxZoom: 18, attribution: '&copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, DeLorme, NAVTEQ', crossOrigin: 'anonymous' }
+    }
+  };
+
+  const source = sources[mapSource] || sources['carto-dark'];
+  appState.layers.baseTile = L.tileLayer(source.url, source.options).addTo(appState.map);
 }
 
 function populateSettingsForm() {
@@ -302,7 +596,7 @@ function populateSettingsForm() {
   settingDwellMinHoursEl.value = (settings.dwellMinMs / MS_PER_HOUR).toFixed(2);
   settingFlightDistanceKmEl.value = settings.flightDistanceKm;
   settingFlightSpeedKmhEl.value = settings.flightSpeedKmh;
-  settingUseCartoEl.checked = settings.useCarto;
+  settingMapSourceEl.value = settings.mapSource || 'carto-dark';
 }
 
 function saveSettingsFromForm() {
@@ -316,10 +610,10 @@ function saveSettingsFromForm() {
     dwellMinMs: Number(settingDwellMinHoursEl.value) * MS_PER_HOUR,
     flightDistanceKm: Number(settingFlightDistanceKmEl.value),
     flightSpeedKmh: Number(settingFlightSpeedKmhEl.value),
-    useCarto: settingUseCartoEl.checked
+    mapSource: settingMapSourceEl.value
   };
 
-  const { bezierFillGaps: _bfg, removeRedundantPoints: _rrp, useCarto: _uc, ...numericSettings } = nextSettings;
+  const { bezierFillGaps: _bfg, removeRedundantPoints: _rrp, mapSource: _ms, ...numericSettings } = nextSettings;
   const invalid = Object.values(numericSettings).some((value) => !Number.isFinite(value) || value <= 0);
   if (invalid) {
     setStatus('Invalid settings values. Please use numbers greater than 0.');
@@ -327,7 +621,8 @@ function saveSettingsFromForm() {
   }
 
   settings = { ...settings, ...nextSettings };
-  setTileLayer(settings.useCarto);
+  saveSettings();
+  setTileLayer(settings.mapSource);
   closeDialog(settingsDialogEl);
 
   if (appState.rawPoints.length >= 2) {
@@ -351,26 +646,34 @@ function saveSettingsFromForm() {
 async function handleImport(file) {
   try {
     setStatus(`Loading ${file.name}...`);
-    const text = await file.text();
     const ext = file.name.toLowerCase().split('.').pop();
 
     let rawPoints;
     let skipOptimize = false;
     let embeddedSettings = null;
     if (ext === 'gpx') {
+      const text = await file.text();
       const parsed = parseGpx(text);
       rawPoints = parsed.points;
       embeddedSettings = parsed.embeddedSettings;
       skipOptimize = parsed.creator === 'GPXViewer';
     } else if (ext === 'kml') {
+      const text = await file.text();
       const parsed = parseKml(text);
       rawPoints = parsed.points;
       embeddedSettings = parsed.embeddedSettings;
       if (embeddedSettings) skipOptimize = true;
+    } else if (ext === 'kmz') {
+      const kmlText = await extractKmlFromKmz(file);
+      const parsed = parseKml(kmlText);
+      rawPoints = parsed.points;
+      embeddedSettings = parsed.embeddedSettings;
+      if (embeddedSettings) skipOptimize = true;
     } else if (ext === 'json') {
+      const text = await file.text();
       rawPoints = parsePolarstepsJson(text);
     } else {
-      throw new Error('Unsupported file format. Please use .gpx, .kml, or Polarsteps .json');
+      throw new Error('Unsupported file format. Please use .gpx, .kml, .kmz, or Polarsteps .json');
     }
 
     if (rawPoints.length < 2) {
@@ -379,6 +682,7 @@ async function handleImport(file) {
 
     if (embeddedSettings) {
       settings = { ...settings, ...embeddedSettings };
+      saveSettings();
       populateSettingsForm();
     }
 
@@ -748,6 +1052,95 @@ function parseKml(xmlText) {
     })
     .filter(Boolean);
   return { points, embeddedSettings };
+}
+
+async function extractKmlFromKmz(file) {
+  const buffer = await file.arrayBuffer();
+  const view = new DataView(buffer);
+
+  // Find End of Central Directory record by scanning backwards for signature 0x06054b50
+  let eocdOffset = -1;
+  for (let i = buffer.byteLength - 22; i >= Math.max(0, buffer.byteLength - 65557); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocdOffset = i;
+      break;
+    }
+  }
+  if (eocdOffset < 0) throw new Error('Invalid KMZ file: missing ZIP end-of-central-directory');
+
+  const cdOffset = view.getUint32(eocdOffset + 16, true);
+  const cdSize = view.getUint32(eocdOffset + 12, true);
+
+  // Scan Central Directory for .kml files
+  let offset = cdOffset;
+  const end = cdOffset + cdSize;
+  const candidates = [];
+
+  while (offset + 46 <= end) {
+    if (view.getUint32(offset, true) !== 0x02014b50) break;
+
+    const compressionMethod = view.getUint16(offset + 10, true);
+    const compressedSize = view.getUint32(offset + 20, true);
+    const uncompressedSize = view.getUint32(offset + 24, true);
+    const nameLen = view.getUint16(offset + 28, true);
+    const extraLen = view.getUint16(offset + 30, true);
+    const commentLen = view.getUint16(offset + 32, true);
+    const localHeaderOffset = view.getUint32(offset + 42, true);
+
+    const nameBytes = new Uint8Array(buffer, offset + 46, nameLen);
+    const name = new TextDecoder().decode(nameBytes);
+
+    if (name.toLowerCase().endsWith('.kml')) {
+      const score = name.toLowerCase().includes('doc.kml') ? 2 : (name.toLowerCase().includes('kml/') ? 1 : 0);
+      candidates.push({ name, compressionMethod, compressedSize, uncompressedSize, localHeaderOffset, score });
+    }
+
+    offset += 46 + nameLen + extraLen + commentLen;
+  }
+
+  if (!candidates.length) throw new Error('KMZ file does not contain a KML file');
+
+  candidates.sort((a, b) => b.score - a.score);
+  const entry = candidates[0];
+
+  // Read local file header to get data offset
+  const lNameLen = view.getUint16(entry.localHeaderOffset + 26, true);
+  const lExtraLen = view.getUint16(entry.localHeaderOffset + 28, true);
+  const dataOffset = entry.localHeaderOffset + 30 + lNameLen + lExtraLen;
+
+  const rawData = new Uint8Array(buffer, dataOffset, entry.compressedSize);
+
+  if (entry.compressionMethod === 0) {
+    return new TextDecoder().decode(rawData);
+  }
+
+  // Deflate decompression using DecompressionStream
+  if (typeof DecompressionStream === 'undefined') {
+    throw new Error('KMZ support requires a browser with DecompressionStream API');
+  }
+
+  const ds = new DecompressionStream('deflate-raw');
+  const writer = ds.writable.getWriter();
+  writer.write(rawData);
+  writer.close();
+
+  const reader = ds.readable.getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+
+  const totalLen = chunks.reduce((s, c) => s + c.length, 0);
+  const result = new Uint8Array(totalLen);
+  let pos = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, pos);
+    pos += chunk.length;
+  }
+
+  return new TextDecoder().decode(result);
 }
 
 function optimizePoints(rawPoints) {
