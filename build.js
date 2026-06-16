@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 const projectRoot = __dirname;
 const srcDir = path.join(projectRoot, 'src');
@@ -58,7 +59,15 @@ async function build() {
 
   const template = fs.readFileSync(path.join(srcDir, 'template.html'), 'utf8');
   const appCss = fs.readFileSync(path.join(srcDir, 'styles.css'), 'utf8');
-  const appJs = fs.readFileSync(path.join(srcDir, 'main.js'), 'utf8');
+  let appJs = fs.readFileSync(path.join(srcDir, 'main.js'), 'utf8');
+
+  const demoGpxPath = path.join(projectRoot, 'examples', 'spain.gpx');
+  if (!fs.existsSync(demoGpxPath)) {
+    throw new Error(`Demo GPX not found: ${demoGpxPath}`);
+  }
+  const demoGpxGz = zlib.gzipSync(fs.readFileSync(demoGpxPath));
+  const demoGpxB64 = demoGpxGz.toString('base64');
+  appJs = appJs.replace('/*__DEMO_GPX_B64__*/', demoGpxB64);
 
   const [leafletCss, leafletJs] = await Promise.all([
     fetchText(LEAFLET_CSS_URL),

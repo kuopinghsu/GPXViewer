@@ -40,6 +40,8 @@ function toStoredLon(lon) {
 }
 
 const SETTINGS_KEY = 'gpxviewer-settings';
+const DEMO_GPX_NAME = 'spain-demo.gpx';
+const DEMO_GPX_B64 = '/*__DEMO_GPX_B64__*/';
 
 const defaultSettings = {
   maxAllowedSpeedKmh: 30,
@@ -74,6 +76,7 @@ function saveSettings() {
 let settings = loadSettings();
 
 const fileInputEl = document.getElementById('fileInput');
+const demoBtnEl = document.getElementById('demoBtn');
 const exportBtnEl = document.getElementById('exportBtn');
 const exportKmlBtnEl = document.getElementById('exportKmlBtn');
 const statsEl = document.getElementById('stats');
@@ -194,6 +197,10 @@ function wireEvents() {
       return;
     }
     await handleImport(file);
+  });
+
+  demoBtnEl.addEventListener('click', () => {
+    loadDemoTrack();
   });
 
   exportBtnEl.addEventListener('click', () => {
@@ -660,71 +667,103 @@ async function handleImport(file) {
   try {
     setStatus(`Loading ${file.name}...`);
     const ext = file.name.toLowerCase().split('.').pop();
-
-    let rawPoints;
-    let skipOptimize = false;
-    let embeddedSettings = null;
-    if (ext === 'gpx') {
-      const text = await file.text();
-      const parsed = parseGpx(text);
-      rawPoints = parsed.points;
-      embeddedSettings = parsed.embeddedSettings;
-      skipOptimize = parsed.creator === 'GPXViewer';
-    } else if (ext === 'kml') {
-      const text = await file.text();
-      const parsed = parseKml(text);
-      rawPoints = parsed.points;
-      embeddedSettings = parsed.embeddedSettings;
-      if (embeddedSettings) skipOptimize = true;
-    } else if (ext === 'kmz') {
-      const kmlText = await extractKmlFromKmz(file);
-      const parsed = parseKml(kmlText);
-      rawPoints = parsed.points;
-      embeddedSettings = parsed.embeddedSettings;
-      if (embeddedSettings) skipOptimize = true;
-    } else if (ext === 'json') {
-      const text = await file.text();
-      rawPoints = parsePolarstepsJson(text);
-    } else {
-      throw new Error('Unsupported file format. Please use .gpx, .kml, .kmz, or Polarsteps .json');
-    }
-
-    if (rawPoints.length < 2) {
-      throw new Error('Track must contain at least 2 points.');
-    }
-
-    if (embeddedSettings) {
-      settings = { ...settings, ...embeddedSettings };
-      saveSettings();
-      populateSettingsForm();
-    }
-
-    const optimized = skipOptimize ? annotateSpeed(rawPoints) : optimizePoints(rawPoints);
-    if (optimized.length < 2) {
-      throw new Error('Optimization removed too many points; unable to render track.');
-    }
-
-    appState.rawPoints = rawPoints;
-    appState.optimizedPoints = optimized;
-    appState.undoStack = [];
-    appState.redoStack = [];
-    appState.fileName = file.name;
-    renderTrack(optimized, { centerOnFirst: true });
-    renderStats(rawPoints, optimized);
-
-    if (mapEmptyStateEl) {
-      mapEmptyStateEl.hidden = true;
-    }
-    exportBtnEl.disabled = false;
-    exportKmlBtnEl.disabled = false;
-    undoBtnEl.disabled = true;
-    redoBtnEl.disabled = true;
-    setStatus(`Imported ${rawPoints.length} points${skipOptimize ? '' : `, optimized to ${optimized.length} points`}${embeddedSettings ? ' (settings restored)' : ''}.`);
+    const parsed = await readTrackFromFile(file, ext);
+    applyImportedTrack(parsed, file.name);
   } catch (error) {
     setStatus(`Error: ${error.message}`);
     exportBtnEl.disabled = true;
     exportKmlBtnEl.disabled = true;
   }
+}
+
+async function loadDemoTrack() {
+  try {
+    if (!DEMO_GPX_B64 || DEMO_GPX_B64.startsWith('/*')) {
+      throw new Error('Demo track is not embedded. Run make build first.');
+    }
+    setStatus('Loading demo track...');
+    const text = await gunzipBase64(DEMO_GPX_B64);
+    const parsed = parseTrackFromText(text, 'gpx');
+    applyImportedTrack(parsed, DEMO_GPX_NAME);
+  } catch (error) {
+    setStatus(`Error: ${error.message}`);
+    exportBtnEl.disabled = true;
+    exportKmlBtnEl.disabled = true;
+  }
+}
+
+async function gunzipBase64(b64) {
+  const bytes = Uint8Array.from(atob(b64), (char) => char.charCodeAt(0));
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Response(stream).text();
+}
+
+async function readTrackFromFile(file, ext) {
+  if (ext === 'kmz') {
+    const kmlText = await extractKmlFromKmz(file);
+    return parseTrackFromText(kmlText, 'kml');
+  }
+
+  const text = await file.text();
+  return parseTrackFromText(text, ext);
+}
+
+function parseTrackFromText(text, ext) {
+  let rawPoints;
+  let skipOptimize = false;
+  let embeddedSettings = null;
+
+  if (ext === 'gpx') {
+    const parsed = parseGpx(text);
+    rawPoints = parsed.points;
+    embeddedSettings = parsed.embeddedSettings;
+    skipOptimize = parsed.creator === 'GPXViewer';
+  } else if (ext === 'kml') {
+    const parsed = parseKml(text);
+    rawPoints = parsed.points;
+    embeddedSettings = parsed.embeddedSettings;
+    if (embeddedSettings) skipOptimize = true;
+  } else if (ext === 'json') {
+    rawPoints = parsePolarstepsJson(text);
+  } else {
+    throw new Error('Unsupported file format. Please use .gpx, .kml, .kmz, or Polarsteps .json');
+  }
+
+  return { rawPoints, skipOptimize, embeddedSettings };
+}
+
+function applyImportedTrack({ rawPoints, skipOptimize, embeddedSettings }, fileName) {
+  if (rawPoints.length < 2) {
+    throw new Error('Track must contain at least 2 points.');
+  }
+
+  if (embeddedSettings) {
+    settings = { ...settings, ...embeddedSettings };
+    saveSettings();
+    populateSettingsForm();
+  }
+
+  const optimized = skipOptimize ? annotateSpeed(rawPoints) : optimizePoints(rawPoints);
+  if (optimized.length < 2) {
+    throw new Error('Optimization removed too many points; unable to render track.');
+  }
+
+  appState.rawPoints = rawPoints;
+  appState.optimizedPoints = optimized;
+  appState.undoStack = [];
+  appState.redoStack = [];
+  appState.fileName = fileName;
+  renderTrack(optimized, { centerOnFirst: true });
+  renderStats(rawPoints, optimized);
+
+  if (mapEmptyStateEl) {
+    mapEmptyStateEl.hidden = true;
+  }
+  exportBtnEl.disabled = false;
+  exportKmlBtnEl.disabled = false;
+  undoBtnEl.disabled = true;
+  redoBtnEl.disabled = true;
+  setStatus(`Imported ${rawPoints.length} points${skipOptimize ? '' : `, optimized to ${optimized.length} points`}${embeddedSettings ? ' (settings restored)' : ''}.`);
 }
 
 function parsePolarstepsJson(jsonText) {
