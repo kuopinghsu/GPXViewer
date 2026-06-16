@@ -2420,6 +2420,10 @@ button:disabled {
           <div class="shortcut-row"><kbd>4</kbd><span>Highest point</span></div>
         </div>
         <div class="shortcut-group">
+          <div class="shortcut-group-title">Edit</div>
+          <div class="shortcut-row"><kbd>Del</kbd><span>Delete hovered point</span></div>
+        </div>
+        <div class="shortcut-group">
           <div class="shortcut-group-title">UI</div>
           <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
           <div class="shortcut-row"><kbd>P</kbd><span>Toggle side panel</span></div>
@@ -2455,6 +2459,7 @@ const appState = {
   selectedMarker: null,
   fileName: '',
   contextMenuPointIndex: -1,
+  hoveredPointIndex: -1,
   lonOffset: 0  // 360 when track crosses Pacific, 0 otherwise
 };
 
@@ -2518,6 +2523,7 @@ const exportKmlBtnEl = document.getElementById('exportKmlBtn');
 const statsEl = document.getElementById('stats');
 const pointInfoEl = document.getElementById('pointInfo');
 const statusBarEl = document.getElementById('statusBar');
+const logEl = document.getElementById('log');
 const pointContextMenuEl = document.getElementById('pointContextMenu');
 const searchGeminiBtnEl = document.getElementById('searchGeminiBtn');
 const removePointBtnEl = document.getElementById('removePointBtn');
@@ -2618,6 +2624,10 @@ function initMap() {
     if (appState.optimizedPoints.length) {
       renderPointMarkers(appState.optimizedPoints);
     }
+  });
+
+  appState.map.getContainer().addEventListener('mouseleave', () => {
+    appState.hoveredPointIndex = -1;
   });
 }
 
@@ -2740,6 +2750,13 @@ function wireEvents() {
     }
 
     if (isInput) return;
+
+    if ((event.key === 'Delete' || event.key === 'Backspace') && appState.hoveredPointIndex >= 0) {
+      event.preventDefault();
+      hidePointContextMenu();
+      removePointFromTrack(appState.hoveredPointIndex);
+      return;
+    }
 
     if (event.key === '?') {
       shortcutsDialogEl.hidden = !shortcutsDialogEl.hidden;
@@ -3923,6 +3940,34 @@ function buildTrackRuns(points, flightStartSet) {
   return runs;
 }
 
+function getPointProximityPx() {
+  return window.matchMedia('(hover: none) and (pointer: coarse)').matches ? 30 : 20;
+}
+
+function findNearestPointIndexAtContainerPoint(mousePos, radiusPx) {
+  const threshold = radiusPx * radiusPx;
+  let nearestIdx = -1;
+  let nearestDist = Infinity;
+  appState.pointMarkers.forEach((marker, i) => {
+    if (!marker) return;
+    const p = appState.optimizedPoints[i];
+    const pos = appState.map.latLngToContainerPoint([p.lat, displayLon(p)]);
+    const dx = mousePos.x - pos.x;
+    const dy = mousePos.y - pos.y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 <= threshold && d2 < nearestDist) {
+      nearestDist = d2;
+      nearestIdx = i;
+    }
+  });
+  return nearestIdx;
+}
+
+function findNearestPointInRadius(latlng, radiusPx) {
+  const mousePos = appState.map.latLngToContainerPoint(latlng);
+  return findNearestPointIndexAtContainerPoint(mousePos, radiusPx);
+}
+
 function renderPointMarkers(points) {
   appState.layers.points.clearLayers();
   appState.pointMarkers = new Array(points.length).fill(null);
@@ -3968,6 +4013,16 @@ function renderPointMarkers(points) {
       showPointContextMenu(event, index);
     });
 
+    marker.on('mouseover', () => {
+      appState.hoveredPointIndex = index;
+    });
+
+    marker.on('mouseout', () => {
+      if (appState.hoveredPointIndex === index) {
+        appState.hoveredPointIndex = -1;
+      }
+    });
+
     marker.on('dragstart', () => {
       hidePointContextMenu();
     });
@@ -3987,6 +4042,7 @@ function renderTrack(points, options = {}) {
   const previousCenter = preserveView ? appState.map.getCenter() : null;
   const previousZoom = preserveView ? appState.map.getZoom() : null;
 
+  appState.hoveredPointIndex = -1;
   appState.layers.track.clearLayers();
   appState.layers.points.clearLayers();
   appState.layers.transport.clearLayers();
@@ -4003,7 +4059,7 @@ function renderTrack(points, options = {}) {
   const flightStartSet = new Set(movementSegments.map((s) => s.start));
   const runs = buildTrackRuns(points, flightStartSet);
 
-  const POINT_PROXIMITY_PX = window.matchMedia('(hover: none) and (pointer: coarse)').matches ? 30 : 20;
+  const POINT_PROXIMITY_PX = getPointProximityPx();
   let nearPoint = false;
   let onPolyline = false;
 
@@ -4015,26 +4071,6 @@ function renderTrack(points, options = {}) {
     } else {
       appState.map.getContainer().style.cursor = '';
     }
-  }
-
-  function findNearestPointInRadius(latlng, radiusPx) {
-    const mousePos = appState.map.latLngToContainerPoint(latlng);
-    const threshold = radiusPx * radiusPx;
-    let nearestIdx = -1;
-    let nearestDist = Infinity;
-    appState.pointMarkers.forEach((marker, i) => {
-      if (!marker) return;
-      const p = appState.optimizedPoints[i];
-      const pos = appState.map.latLngToContainerPoint([p.lat, displayLon(p)]);
-      const dx = mousePos.x - pos.x;
-      const dy = mousePos.y - pos.y;
-      const d2 = dx * dx + dy * dy;
-      if (d2 <= threshold && d2 < nearestDist) {
-        nearestDist = d2;
-        nearestIdx = i;
-      }
-    });
-    return nearestIdx;
   }
 
   runs.forEach((run) => {
@@ -4082,15 +4118,9 @@ function renderTrack(points, options = {}) {
 
   trackMouseMoveHandler = (event) => {
     const mousePos = appState.map.latLngToContainerPoint(event.latlng);
-    const threshold = POINT_PROXIMITY_PX * POINT_PROXIMITY_PX;
-    nearPoint = appState.pointMarkers.some((marker, i) => {
-      if (!marker) return false;
-      const p = appState.optimizedPoints[i];
-      const pos = appState.map.latLngToContainerPoint([p.lat, displayLon(p)]);
-      const dx = mousePos.x - pos.x;
-      const dy = mousePos.y - pos.y;
-      return dx * dx + dy * dy <= threshold;
-    });
+    const nearestIdx = findNearestPointIndexAtContainerPoint(mousePos, POINT_PROXIMITY_PX);
+    nearPoint = nearestIdx >= 0;
+    appState.hoveredPointIndex = nearestIdx;
     updateMapCursor();
   };
   appState.map.on('mousemove', trackMouseMoveHandler);
@@ -4657,6 +4687,7 @@ function setStatus(message) {
   if (statusBarEl) {
     statusBarEl.textContent = message;
   }
+  if (!logEl) return;
   const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const entry = document.createElement('div');
   entry.className = 'log-entry';
