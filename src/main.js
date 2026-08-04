@@ -1,11 +1,16 @@
 const appState = {
   map: null,
+  glMap: null,
+  engine: 'leaflet', // 'leaflet' | 'maplibre'
   layers: {
     track: null,
     points: null,
     transport: null,
     baseTile: null
   },
+  glMarkers: [],
+  glTransportMarkers: [],
+  glPopup: null,
   rawPoints: [],
   optimizedPoints: [],
   pointMarkers: [],
@@ -18,6 +23,10 @@ const appState = {
   hoveredPointIndex: -1,
   lonOffset: 0  // 360 when track crosses Pacific, 0 otherwise
 };
+
+const GL_TRACK_SOURCE = 'gpx-track';
+const GL_TRACK_LAYER = 'gpx-track-line';
+const GL_FLIGHT_LAYER = 'gpx-flight-line';
 
 const MS_PER_HOUR = 3600000;
 const METERS_PER_KM = 1000;
@@ -142,8 +151,8 @@ function applyTheme(theme) {
     document.documentElement.removeAttribute('data-theme');
   }
   localStorage.setItem(THEME_KEY, theme);
-  // Re-init map tiles for dark/light mode if map exists
-  if (appState.map) {
+  // Re-init map tiles / globe style for dark/light mode if a map exists
+  if (appState.map || appState.glMap) {
     setTileLayer(settings.mapSource);
   }
 }
@@ -166,29 +175,289 @@ if (window.matchMedia('(max-width: 900px)').matches) {
   rightPanel.classList.add('collapsed');
 }
 
-function initMap() {
-  appState.map = L.map('map', { preferCanvas: true }).setView([25.03, 121.56], 7);
+function isGlobeSource(mapSource) {
+  return mapSource === 'globe';
+}
 
-  appState.layers.track = L.layerGroup().addTo(appState.map);
-  appState.layers.points = L.layerGroup().addTo(appState.map);
-  appState.layers.transport = L.layerGroup().addTo(appState.map);
+function captureMapView() {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    const c = appState.glMap.getCenter();
+    return { lat: c.lat, lon: c.lng, zoom: appState.glMap.getZoom() };
+  }
+  if (appState.map) {
+    const c = appState.map.getCenter();
+    return { lat: c.lat, lon: c.lng, zoom: appState.map.getZoom() };
+  }
+  return { lat: 25.03, lon: 121.56, zoom: 7 };
+}
 
-  setTileLayer(settings.mapSource);
+function setMapView(lat, lon, zoom, options = {}) {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    if (options.animate === false) {
+      appState.glMap.jumpTo({ center: [lon, lat], zoom });
+    } else {
+      appState.glMap.easeTo({ center: [lon, lat], zoom, duration: 500 });
+    }
+    return;
+  }
+  if (appState.map) {
+    appState.map.setView([lat, lon], zoom, options);
+  }
+}
 
+function fitMapBounds(points, paddingPx = 40) {
+  if (!points.length) return;
+  const lats = points.map((p) => p.lat);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    const lons = points.map((p) => p.lon);
+    const minLon = Math.min(...lons);
+    const maxLon = Math.max(...lons);
+    if (maxLon - minLon > 180) {
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLon = (minLon + maxLon) / 2;
+      const lonSpan = Math.min(maxLon - minLon, 360 - (maxLon - minLon));
+      const zoom = Math.max(1, Math.min(6, Math.floor(Math.log2(1440 / Math.max(lonSpan, 1)))));
+      setMapView(centerLat, centerLon, zoom, { animate: false });
+    } else {
+      appState.glMap.fitBounds(
+        [[minLon, minLat], [maxLon, maxLat]],
+        { padding: { top: paddingPx, bottom: paddingPx, left: paddingPx, right: paddingPx }, duration: 0 }
+      );
+    }
+    return;
+  }
+
+  const displayLons = points.map((p) => displayLon(p));
+  const minLon = Math.min(...displayLons);
+  const maxLon = Math.max(...displayLons);
+  if (appState.lonOffset) {
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLon = (minLon + maxLon) / 2;
+    const lonSpan = maxLon - minLon;
+    const zoom = Math.max(1, Math.min(6, Math.floor(Math.log2(1440 / lonSpan))));
+    setMapView(centerLat, centerLon, zoom, { animate: false });
+  } else if (appState.map) {
+    appState.map.fitBounds([[minLat, minLon], [maxLat, maxLon]], { padding: [paddingPx, paddingPx] });
+  }
+}
+
+function projectToContainerPoint(lat, lon) {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    const p = appState.glMap.project([lon, lat]);
+    return { x: p.x, y: p.y };
+  }
+  return appState.map.latLngToContainerPoint([lat, lon]);
+}
+
+function unprojectContainerPoint(point) {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    const ll = appState.glMap.unproject([point.x, point.y]);
+    return { lat: ll.lat, lng: ll.lng };
+  }
+  return appState.map.containerPointToLatLng([point.x, point.y]);
+}
+
+function getGlobeRasterStyle() {
+  const light = document.documentElement.getAttribute('data-theme') === 'light';
+  const tiles = light
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  return {
+    version: 8,
+    name: light ? 'gpx-globe-light' : 'gpx-globe-dark',
+    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+    sources: {
+      'raster-tiles': {
+        type: 'raster',
+        tiles: ['a', 'b', 'c', 'd'].map((s) => tiles.replace('{s}', s).replace('{r}', '')),
+        tileSize: 256,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxzoom: 19
+      }
+    },
+    layers: [
+      {
+        id: 'raster-tiles',
+        type: 'raster',
+        source: 'raster-tiles'
+      }
+    ],
+    projection: { type: 'globe' }
+  };
+}
+
+function clearGlOverlays() {
+  appState.glMarkers.forEach((m) => m.remove());
+  appState.glMarkers = [];
+  appState.glTransportMarkers.forEach((m) => m.remove());
+  appState.glTransportMarkers = [];
+  appState.pointMarkers = [];
+  if (appState.glPopup) {
+    appState.glPopup.remove();
+    appState.glPopup = null;
+  }
+  appState.selectedMarker = null;
+  const map = appState.glMap;
+  if (!map) return;
+  if (map.getLayer(GL_FLIGHT_LAYER)) map.removeLayer(GL_FLIGHT_LAYER);
+  if (map.getLayer(GL_TRACK_LAYER)) map.removeLayer(GL_TRACK_LAYER);
+  if (map.getSource(GL_TRACK_SOURCE)) map.removeSource(GL_TRACK_SOURCE);
+}
+
+function destroyLeafletMap() {
+  if (!appState.map) return;
+  if (trackMouseMoveHandler) {
+    appState.map.off('mousemove', trackMouseMoveHandler);
+    trackMouseMoveHandler = null;
+  }
+  appState.map.remove();
+  appState.map = null;
+  appState.layers.track = null;
+  appState.layers.points = null;
+  appState.layers.transport = null;
+  appState.layers.baseTile = null;
+  appState.pointMarkers = [];
+  appState.selectedMarker = null;
+}
+
+function destroyGlMap() {
+  if (!appState.glMap) return;
+  clearGlOverlays();
+  appState.glMap.remove();
+  appState.glMap = null;
+}
+
+function bindLeafletMapChrome() {
   appState.map.on('zoomend moveend', updateScaleBar);
   appState.map.on('zoomend moveend', updateViewPresetsVisibility);
-  updateScaleBar();
-  updateViewPresetsVisibility();
-
   appState.map.on('zoomend', () => {
     if (appState.optimizedPoints.length) {
       renderPointMarkers(appState.optimizedPoints);
     }
   });
-
+  appState.map.on('click', () => hidePointContextMenu());
+  appState.map.on('contextmenu', () => hidePointContextMenu());
   appState.map.getContainer().addEventListener('mouseleave', () => {
     appState.hoveredPointIndex = -1;
   });
+  updateScaleBar();
+  updateViewPresetsVisibility();
+}
+
+function bindGlMapChrome() {
+  appState.glMap.on('zoomend', () => {
+    updateScaleBar();
+    updateViewPresetsVisibility();
+    if (appState.optimizedPoints.length) {
+      renderPointMarkers(appState.optimizedPoints);
+    }
+  });
+  appState.glMap.on('moveend', () => {
+    updateScaleBar();
+    updateViewPresetsVisibility();
+  });
+  appState.glMap.on('click', (event) => {
+    hidePointContextMenu();
+    handleGlMapClick(event);
+  });
+  appState.glMap.on('contextmenu', (event) => {
+    event.preventDefault();
+    hidePointContextMenu();
+    handleGlMapContextMenu(event);
+  });
+  appState.glMap.getCanvas().addEventListener('mouseleave', () => {
+    appState.hoveredPointIndex = -1;
+  });
+  updateScaleBar();
+  updateViewPresetsVisibility();
+}
+
+function initLeafletMap(view) {
+  appState.engine = 'leaflet';
+  appState.map = L.map('map', { preferCanvas: true }).setView([view.lat, view.lon], view.zoom);
+  appState.layers.track = L.layerGroup().addTo(appState.map);
+  appState.layers.points = L.layerGroup().addTo(appState.map);
+  appState.layers.transport = L.layerGroup().addTo(appState.map);
+  bindLeafletMapChrome();
+}
+
+function initGlMap(view) {
+  appState.engine = 'maplibre';
+  // Clear leftover Leaflet DOM inside #map if any
+  const container = document.getElementById('map');
+  container.innerHTML = '';
+  appState.glMap = new maplibregl.Map({
+    container: 'map',
+    style: getGlobeRasterStyle(),
+    center: [view.lon, view.lat],
+    zoom: Math.min(view.zoom, 6),
+    maxPitch: 85,
+    attributionControl: true,
+    preserveDrawingBuffer: true
+  });
+  appState.glMap.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+  if (typeof maplibregl.GlobeControl === 'function') {
+    appState.glMap.addControl(new maplibregl.GlobeControl(), 'top-right');
+  }
+  appState.glMap.on('style.load', () => {
+    appState.glMap.setProjection({ type: 'globe' });
+  });
+  appState.glMap.once('load', () => {
+    if (appState.optimizedPoints.length) {
+      renderTrack(appState.optimizedPoints, { preserveView: true });
+    }
+  });
+  bindGlMapChrome();
+}
+
+function ensureMapEngine(mapSource) {
+  const wantGlobe = isGlobeSource(mapSource);
+  const view = captureMapView();
+
+  if (wantGlobe && appState.engine !== 'maplibre') {
+    destroyLeafletMap();
+    initGlMap(view);
+    return;
+  }
+
+  if (!wantGlobe && appState.engine !== 'leaflet') {
+    destroyGlMap();
+    // Ensure #map is empty before Leaflet mounts
+    document.getElementById('map').innerHTML = '';
+    initLeafletMap(view);
+    return;
+  }
+
+  if (wantGlobe && appState.glMap) {
+    // Theme may have changed — refresh raster style while staying on globe
+    const nextStyle = getGlobeRasterStyle();
+    const currentName = appState.glMap.getStyle()?.name;
+    if (currentName === nextStyle.name) return;
+
+    const center = appState.glMap.getCenter();
+    const zoom = appState.glMap.getZoom();
+    appState.glMap.setStyle(nextStyle);
+    appState.glMap.once('style.load', () => {
+      appState.glMap.setProjection({ type: 'globe' });
+      appState.glMap.jumpTo({ center, zoom });
+      if (appState.optimizedPoints.length) {
+        renderTrack(appState.optimizedPoints, { preserveView: true });
+      }
+    });
+  }
+}
+
+function initMap() {
+  if (isGlobeSource(settings.mapSource)) {
+    initGlMap({ lat: 25.03, lon: 121.56, zoom: 2 });
+  } else {
+    initLeafletMap({ lat: 25.03, lon: 121.56, zoom: 7 });
+    setTileLayer(settings.mapSource);
+  }
 }
 
 function wireEvents() {
@@ -361,6 +630,10 @@ function wireEvents() {
     panel.classList.toggle('collapsed', collapsing);
     panelCollapseBtnEl.title = collapsing ? 'Expand panel' : 'Collapse panel';
     panelCollapseBtnEl.setAttribute('aria-label', collapsing ? 'Expand panel' : 'Collapse panel');
+    requestAnimationFrame(() => {
+      if (appState.map) appState.map.invalidateSize();
+      if (appState.glMap) appState.glMap.resize();
+    });
   });
 
   copyMapBtnEl.addEventListener('click', copyMapToClipboard);
@@ -373,14 +646,7 @@ function wireEvents() {
 
   window.addEventListener('resize', () => {
     hidePointContextMenu();
-  });
-
-  appState.map.on('click', () => {
-    hidePointContextMenu();
-  });
-
-  appState.map.on('contextmenu', () => {
-    hidePointContextMenu();
+    if (appState.glMap) appState.glMap.resize();
   });
 
   // ── Keyboard shortcuts ──
@@ -450,7 +716,7 @@ function wireEvents() {
     const lat = parseFloat(item.dataset.lat);
     const lng = parseFloat(item.dataset.lng);
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      appState.map.setView([lat, lng], 14);
+      setMapView(lat, lng, 14);
     }
     searchResultsEl.classList.add('hidden');
     searchInputWrapEl.classList.add('hidden');
@@ -469,20 +735,18 @@ function navigateToPreset(preset) {
   const points = appState.optimizedPoints;
 
   if (preset === 'full') {
-    const lats = points.map(p => p.lat);
-    const lons = points.map(p => displayLon(points[0]));
-    const displayLons = points.map(p => displayLon(p));
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-    const minLon = Math.min(...displayLons), maxLon = Math.max(...displayLons);
-    appState.map.fitBounds([[minLat, minLon], [maxLat, maxLon]], { padding: [40, 40] });
+    fitMapBounds(points, 40);
   } else if (preset === 'start') {
-    appState.map.setView([points[0].lat, displayLon(points[0])], 14);
+    const lon = appState.engine === 'maplibre' ? points[0].lon : displayLon(points[0]);
+    setMapView(points[0].lat, lon, 14);
   } else if (preset === 'end') {
     const last = points[points.length - 1];
-    appState.map.setView([last.lat, displayLon(last)], 14);
+    const lon = appState.engine === 'maplibre' ? last.lon : displayLon(last);
+    setMapView(last.lat, lon, 14);
   } else if (preset === 'highest') {
     const highest = points.reduce((best, p) => (Number(p.ele) || 0) > (Number(best.ele) || 0) ? p : best, points[0]);
-    appState.map.setView([highest.lat, displayLon(highest)], 14);
+    const lon = appState.engine === 'maplibre' ? highest.lon : displayLon(highest);
+    setMapView(highest.lat, lon, 14);
   }
 }
 
@@ -495,11 +759,26 @@ function updateViewPresetsVisibility() {
 }
 
 function updateScaleBar() {
-  if (!appState.map) return;
-  const zoom = appState.map.getZoom();
-  const center = appState.map.getCenter();
-  const latRad = center.lat * Math.PI / 180;
-  const metersPerPx = 156543.03392 * Math.cos(latRad) / Math.pow(2, zoom);
+  let metersPerPx;
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    const center = appState.glMap.getCenter();
+    const p0 = appState.glMap.project(center);
+    const p1 = { x: p0.x + 100, y: p0.y };
+    const ll1 = appState.glMap.unproject([p1.x, p1.y]);
+    metersPerPx = haversineMeters(
+      { lat: center.lat, lon: center.lng },
+      { lat: ll1.lat, lon: ll1.lng }
+    ) / 100;
+  } else if (appState.map) {
+    const zoom = appState.map.getZoom();
+    const center = appState.map.getCenter();
+    const latRad = center.lat * Math.PI / 180;
+    metersPerPx = 156543.03392 * Math.cos(latRad) / Math.pow(2, zoom);
+  } else {
+    return;
+  }
+
+  if (!Number.isFinite(metersPerPx) || metersPerPx <= 0) return;
 
   // Target ~100px width for the scale bar
   const targetPx = 100;
@@ -530,7 +809,7 @@ function executeSearch(query) {
     const lat = parseFloat(coordMatch[1]);
     const lng = parseFloat(coordMatch[2]);
     if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-      appState.map.setView([lat, lng], 14);
+      setMapView(lat, lng, 14);
       setStatus(`Navigated to ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
       return;
     }
@@ -575,7 +854,25 @@ function closeDialog(dialogElement) {
   dialogElement.hidden = true;
 }
 
+function setMapEmptyStateVisible(visible) {
+  if (!mapEmptyStateEl) return;
+  mapEmptyStateEl.hidden = !visible;
+  mapEmptyStateEl.setAttribute('aria-hidden', visible ? 'false' : 'true');
+}
+
 function setTileLayer(mapSource) {
+  const previousEngine = appState.engine;
+  ensureMapEngine(mapSource);
+
+  if (isGlobeSource(mapSource)) {
+    if (previousEngine !== 'maplibre' && appState.optimizedPoints.length && appState.glMap?.isStyleLoaded()) {
+      renderTrack(appState.optimizedPoints, { preserveView: true });
+    }
+    return;
+  }
+
+  if (!appState.map) return;
+
   if (appState.layers.baseTile) {
     appState.map.removeLayer(appState.layers.baseTile);
   }
@@ -605,6 +902,10 @@ function setTileLayer(mapSource) {
 
   const source = sources[mapSource] || sources['carto-dark'];
   appState.layers.baseTile = L.tileLayer(source.url, source.options).addTo(appState.map);
+
+  if (previousEngine !== 'leaflet' && appState.optimizedPoints.length) {
+    renderTrack(appState.optimizedPoints, { preserveView: true });
+  }
 }
 
 function populateSettingsForm() {
@@ -757,9 +1058,7 @@ function applyImportedTrack({ rawPoints, skipOptimize, embeddedSettings }, fileN
   renderTrack(optimized, { centerOnFirst: true });
   renderStats(rawPoints, optimized);
 
-  if (mapEmptyStateEl) {
-    mapEmptyStateEl.hidden = true;
-  }
+  setMapEmptyStateVisible(false);
   exportBtnEl.disabled = false;
   exportKmlBtnEl.disabled = false;
   undoBtnEl.disabled = true;
@@ -1540,6 +1839,10 @@ function getPointProximityPx() {
   return window.matchMedia('(hover: none) and (pointer: coarse)').matches ? 30 : 20;
 }
 
+function pointDisplayLon(point) {
+  return appState.engine === 'maplibre' ? point.lon : displayLon(point);
+}
+
 function findNearestPointIndexAtContainerPoint(mousePos, radiusPx) {
   const threshold = radiusPx * radiusPx;
   let nearestIdx = -1;
@@ -1547,7 +1850,7 @@ function findNearestPointIndexAtContainerPoint(mousePos, radiusPx) {
   appState.pointMarkers.forEach((marker, i) => {
     if (!marker) return;
     const p = appState.optimizedPoints[i];
-    const pos = appState.map.latLngToContainerPoint([p.lat, displayLon(p)]);
+    const pos = projectToContainerPoint(p.lat, pointDisplayLon(p));
     const dx = mousePos.x - pos.x;
     const dy = mousePos.y - pos.y;
     const d2 = dx * dx + dy * dy;
@@ -1560,11 +1863,156 @@ function findNearestPointIndexAtContainerPoint(mousePos, radiusPx) {
 }
 
 function findNearestPointInRadius(latlng, radiusPx) {
-  const mousePos = appState.map.latLngToContainerPoint(latlng);
+  const lon = latlng.lng ?? latlng.lon;
+  const mousePos = projectToContainerPoint(latlng.lat, lon);
   return findNearestPointIndexAtContainerPoint(mousePos, radiusPx);
 }
 
+function splitAntimeridianCoords(coords) {
+  // coords: [[lon, lat], ...] → array of contiguous lines
+  if (coords.length < 2) return coords.length ? [coords] : [];
+  const lines = [];
+  let current = [coords[0]];
+  for (let i = 1; i < coords.length; i += 1) {
+    const prev = current[current.length - 1];
+    const curr = coords[i];
+    if (Math.abs(curr[0] - prev[0]) > 180) {
+      if (current.length >= 2) lines.push(current);
+      current = [curr];
+    } else {
+      current.push(curr);
+    }
+  }
+  if (current.length >= 2) lines.push(current);
+  return lines;
+}
+
+function normalizeLonPair(p1, p2) {
+  // Shift end longitude so the walk p1→p2 uses the shortest path (no ±180 jump).
+  let lon2 = p2.lon;
+  let dLon = lon2 - p1.lon;
+  if (dLon > 180) lon2 -= 360;
+  if (dLon < -180) lon2 += 360;
+  return [
+    { lat: p1.lat, lon: p1.lon },
+    { lat: p2.lat, lon: lon2 }
+  ];
+}
+
+function buildGlobeTrackGeoJSON(points, flightStartSet) {
+  const features = [];
+
+  const pushLine = (latLonPairs, isFlight) => {
+    // latLonPairs: [[lat, lon], ...] in Leaflet order from greatCircleArc / runs
+    const coords = latLonPairs.map(([lat, lon]) => [toStoredLon(lon), lat]);
+    splitAntimeridianCoords(coords).forEach((line) => {
+      features.push({
+        type: 'Feature',
+        properties: { isFlight: !!isFlight },
+        geometry: { type: 'LineString', coordinates: line }
+      });
+    });
+  };
+
+  if (points.length < 2) {
+    return { type: 'FeatureCollection', features };
+  }
+
+  let nonFlight = [[points[0].lat, points[0].lon]];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const p = points[i];
+    const next = points[i + 1];
+    if (!flightStartSet.has(p)) {
+      // Split non-flight runs that jump the antimeridian
+      if (Math.abs(next.lon - p.lon) > 180) {
+        if (nonFlight.length >= 2) pushLine(nonFlight, false);
+        nonFlight = [[next.lat, next.lon]];
+      } else {
+        nonFlight.push([next.lat, next.lon]);
+      }
+    } else {
+      if (nonFlight.length >= 2) pushLine(nonFlight, false);
+      const [a, b] = normalizeLonPair(p, next);
+      const arcs = greatCircleArc(a, b, 60);
+      arcs.forEach((arc) => pushLine(arc, true));
+      nonFlight = [[next.lat, next.lon]];
+    }
+  }
+  if (nonFlight.length >= 2) pushLine(nonFlight, false);
+
+  return { type: 'FeatureCollection', features };
+}
+
+function setGlTrackGeoJSON(geojson) {
+  const map = appState.glMap;
+  if (!map) return;
+  if (map.getSource(GL_TRACK_SOURCE)) {
+    map.getSource(GL_TRACK_SOURCE).setData(geojson);
+    return;
+  }
+  map.addSource(GL_TRACK_SOURCE, { type: 'geojson', data: geojson });
+  map.addLayer({
+    id: GL_TRACK_LAYER,
+    type: 'line',
+    source: GL_TRACK_SOURCE,
+    filter: ['!=', ['get', 'isFlight'], true],
+    paint: {
+      'line-color': '#22c55e',
+      'line-width': 4,
+      'line-opacity': 0.8
+    }
+  });
+  map.addLayer({
+    id: GL_FLIGHT_LAYER,
+    type: 'line',
+    source: GL_TRACK_SOURCE,
+    filter: ['==', ['get', 'isFlight'], true],
+    paint: {
+      'line-color': '#22c55e',
+      'line-width': 4,
+      'line-opacity': 0.8,
+      'line-dasharray': [2, 2]
+    }
+  });
+}
+
+function handleGlMapClick(event) {
+  if (!appState.optimizedPoints.length) return;
+  const POINT_PROXIMITY_PX = getPointProximityPx();
+  const nearIdx = findNearestPointInRadius(
+    { lat: event.lngLat.lat, lng: event.lngLat.lng },
+    POINT_PROXIMITY_PX
+  );
+  if (nearIdx >= 0 && appState.pointMarkers[nearIdx]) {
+    selectMarker(appState.pointMarkers[nearIdx], appState.optimizedPoints[nearIdx]);
+    showPointInfo(appState.optimizedPoints[nearIdx], nearIdx, appState.movementSegments);
+    return;
+  }
+  const layers = [GL_TRACK_LAYER, GL_FLIGHT_LAYER].filter((id) => appState.glMap.getLayer(id));
+  if (!layers.length) return;
+  const hits = appState.glMap.queryRenderedFeatures(event.point, { layers });
+  if (hits.length) {
+    insertPointOnNearestSegment({ lat: event.lngLat.lat, lng: event.lngLat.lng });
+  }
+}
+
+function handleGlMapContextMenu(event) {
+  if (!appState.optimizedPoints.length) return;
+  const nearIdx = findNearestPointInRadius(
+    { lat: event.lngLat.lat, lng: event.lngLat.lng },
+    getPointProximityPx()
+  );
+  if (nearIdx >= 0) {
+    showPointContextMenu({ originalEvent: event.originalEvent }, nearIdx);
+  }
+}
+
 function renderPointMarkers(points) {
+  if (appState.engine === 'maplibre') {
+    renderGlPointMarkers(points);
+    return;
+  }
+
   appState.layers.points.clearLayers();
   appState.pointMarkers = new Array(points.length).fill(null);
   appState.selectedMarker = null;
@@ -1574,7 +2022,7 @@ function renderPointMarkers(points) {
   const last = points.length - 1;
 
   points.forEach((point, index) => {
-    const pos = appState.map.latLngToContainerPoint([point.lat, displayLon(point)]);
+    const pos = projectToContainerPoint(point.lat, displayLon(point));
     const dx = pos.x - lastPos.x;
     const dy = pos.y - lastPos.y;
     const farEnough = Math.sqrt(dx * dx + dy * dy) >= MIN_GAP_PX;
@@ -1633,7 +2081,92 @@ function renderPointMarkers(points) {
   });
 }
 
+function renderGlPointMarkers(points) {
+  appState.glMarkers.forEach((m) => m.remove());
+  appState.glMarkers = [];
+  appState.pointMarkers = new Array(points.length).fill(null);
+  appState.selectedMarker = null;
+  if (appState.glPopup) {
+    appState.glPopup.remove();
+    appState.glPopup = null;
+  }
+
+  const MIN_GAP_PX = 16;
+  const lastPos = { x: -Infinity, y: -Infinity };
+  const last = points.length - 1;
+
+  points.forEach((point, index) => {
+    const pos = projectToContainerPoint(point.lat, point.lon);
+    const dx = pos.x - lastPos.x;
+    const dy = pos.y - lastPos.y;
+    const farEnough = Math.sqrt(dx * dx + dy * dy) >= MIN_GAP_PX;
+    const isImportant = index === 0 || index === last || point.isDwell;
+    if (!farEnough && !isImportant) return;
+
+    lastPos.x = pos.x;
+    lastPos.y = pos.y;
+
+    const size = point.isDwell ? calcDwellSize(point.dwellMs) : 10;
+    const el = document.createElement('div');
+    el.className = ['point-marker', point.isDwell ? 'dwell-marker' : ''].filter(Boolean).join(' ');
+    el.style.width = `${size}px`;
+    el.style.height = `${size}px`;
+
+    const marker = new maplibregl.Marker({ element: el, draggable: true, anchor: 'center' })
+      .setLngLat([point.lon, point.lat])
+      .addTo(appState.glMap);
+
+    el.addEventListener('click', (event) => {
+      event.stopPropagation();
+      hidePointContextMenu();
+      selectMarker(marker, point);
+      showPointInfo(point, index, appState.movementSegments);
+    });
+    el.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      showPointContextMenu({ originalEvent: event }, index);
+    });
+    el.addEventListener('mouseenter', () => {
+      appState.hoveredPointIndex = index;
+    });
+    el.addEventListener('mouseleave', () => {
+      if (appState.hoveredPointIndex === index) appState.hoveredPointIndex = -1;
+    });
+    marker.on('dragstart', () => hidePointContextMenu());
+    marker.on('dragend', () => {
+      const ll = marker.getLngLat();
+      movePointInTrack(index, { lat: ll.lat, lng: ll.lng });
+    });
+
+    appState.pointMarkers[index] = marker;
+    appState.glMarkers.push(marker);
+  });
+}
+
+function renderGlTransportMarkers(movementSegments) {
+  appState.glTransportMarkers.forEach((m) => m.remove());
+  appState.glTransportMarkers = [];
+  movementSegments.forEach((segment) => {
+    const [a, b] = normalizeLonPair(segment.start, segment.end);
+    const arcMid = greatCircleMidpoint(a, b);
+    const el = document.createElement('div');
+    el.className = 'transport-icon';
+    el.title = segment.type;
+    el.textContent = segment.emoji;
+    const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+      .setLngLat([toStoredLon(arcMid.lon), arcMid.lat])
+      .addTo(appState.glMap);
+    appState.glTransportMarkers.push(marker);
+  });
+}
+
 function renderTrack(points, options = {}) {
+  if (appState.engine === 'maplibre') {
+    renderGlTrack(points, options);
+    return;
+  }
+
   const { centerOnFirst = false, preserveView = false } = options;
   const previousCenter = preserveView ? appState.map.getCenter() : null;
   const previousZoom = preserveView ? appState.map.getZoom() : null;
@@ -1713,7 +2246,7 @@ function renderTrack(points, options = {}) {
   });
 
   trackMouseMoveHandler = (event) => {
-    const mousePos = appState.map.latLngToContainerPoint(event.latlng);
+    const mousePos = projectToContainerPoint(event.latlng.lat, event.latlng.lng);
     const nearestIdx = findNearestPointIndexAtContainerPoint(mousePos, POINT_PROXIMITY_PX);
     nearPoint = nearestIdx >= 0;
     appState.hoveredPointIndex = nearestIdx;
@@ -1721,24 +2254,8 @@ function renderTrack(points, options = {}) {
   };
   appState.map.on('mousemove', trackMouseMoveHandler);
 
-  const firstPoint = points[0];
-  if (centerOnFirst && firstPoint) {
-    const lats = points.map(p => p.lat);
-    const lons = points.map(p => displayLon(p));
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-    if (appState.lonOffset) {
-      // Pacific-crossing track: fitBounds normalizes lon>180 back to negative,
-      // making east < west and breaking the centering. Use setView instead.
-      const centerLat = (minLat + maxLat) / 2;
-      const centerLon = (minLon + maxLon) / 2;
-      const lonSpan = maxLon - minLon;
-      // Choose zoom so the full lon span fits: at zoom Z, ~1440/2^Z degrees visible.
-      const zoom = Math.max(1, Math.min(6, Math.floor(Math.log2(1440 / lonSpan))));
-      appState.map.setView([centerLat, centerLon], zoom);
-    } else {
-      appState.map.fitBounds([[minLat, minLon], [maxLat, maxLon]], { padding: [20, 20] });
-    }
+  if (centerOnFirst && points[0]) {
+    fitMapBounds(points, 20);
   } else if (preserveView && previousCenter && Number.isFinite(previousZoom)) {
     appState.map.setView(previousCenter, previousZoom, { animate: false });
   }
@@ -1757,6 +2274,40 @@ function renderTrack(points, options = {}) {
     });
     L.marker([arcMid.lat, arcMid.lon], { icon }).addTo(appState.layers.transport);
   });
+}
+
+function renderGlTrack(points, options = {}) {
+  const { centerOnFirst = false, preserveView = false } = options;
+  if (!appState.glMap) return;
+
+  const previousView = preserveView ? captureMapView() : null;
+  appState.hoveredPointIndex = -1;
+
+  if (centerOnFirst) appState.lonOffset = computeLonOffset(points);
+
+  clearGlOverlays();
+
+  const movementSegments = classifyMovementSegments(points);
+  appState.movementSegments = movementSegments;
+  const flightStartSet = new Set(movementSegments.map((s) => s.start));
+
+  const applyData = () => {
+    setGlTrackGeoJSON(buildGlobeTrackGeoJSON(points, flightStartSet));
+    renderGlPointMarkers(points);
+    renderGlTransportMarkers(movementSegments);
+
+    if (centerOnFirst && points[0]) {
+      fitMapBounds(points, 20);
+    } else if (preserveView && previousView) {
+      setMapView(previousView.lat, previousView.lon, previousView.zoom, { animate: false });
+    }
+  };
+
+  if (appState.glMap.isStyleLoaded()) {
+    applyData();
+  } else {
+    appState.glMap.once('style.load', applyData);
+  }
 }
 
 function insertPointOnNearestSegment(targetLatLng) {
@@ -1824,18 +2375,33 @@ function movePointInTrack(index, latlng) {
   setStatus(`Point ${index} moved.`);
 }
 
+function toLayerPoint(lat, lon) {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    return projectToContainerPoint(lat, lon);
+  }
+  return appState.map.latLngToLayerPoint([lat, lon]);
+}
+
+function fromLayerPoint(point) {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    return unprojectContainerPoint(point);
+  }
+  return appState.map.layerPointToLatLng(point);
+}
+
 function findNearestSegmentIndex(points, targetLatLng) {
   if (!points || points.length < 2) {
     return -1;
   }
 
-  const target = appState.map.latLngToLayerPoint(targetLatLng);
+  const targetLon = targetLatLng.lng ?? targetLatLng.lon;
+  const target = toLayerPoint(targetLatLng.lat, targetLon);
   let bestIndex = -1;
   let bestDistance = Number.POSITIVE_INFINITY;
 
   for (let i = 0; i < points.length - 1; i += 1) {
-    const a = appState.map.latLngToLayerPoint([points[i].lat, displayLon(points[i])]);
-    const b = appState.map.latLngToLayerPoint([points[i + 1].lat, displayLon(points[i + 1])]);
+    const a = toLayerPoint(points[i].lat, pointDisplayLon(points[i]));
+    const b = toLayerPoint(points[i + 1].lat, pointDisplayLon(points[i + 1]));
     const distance = pointToSegmentDistance(target, a, b);
     if (distance < bestDistance) {
       bestDistance = distance;
@@ -1847,11 +2413,12 @@ function findNearestSegmentIndex(points, targetLatLng) {
 }
 
 function projectLatLngToSegment(start, end, targetLatLng) {
-  const target = appState.map.latLngToLayerPoint(targetLatLng);
-  const a = appState.map.latLngToLayerPoint([start.lat, displayLon(start)]);
-  const b = appState.map.latLngToLayerPoint([end.lat, displayLon(end)]);
+  const targetLon = targetLatLng.lng ?? targetLatLng.lon;
+  const target = toLayerPoint(targetLatLng.lat, targetLon);
+  const a = toLayerPoint(start.lat, pointDisplayLon(start));
+  const b = toLayerPoint(end.lat, pointDisplayLon(end));
   const projected = closestPointOnSegment(target, a, b);
-  return appState.map.layerPointToLatLng(projected);
+  return fromLayerPoint(projected);
 }
 
 function pointToSegmentDistance(point, a, b) {
@@ -1994,20 +2561,36 @@ function showPointInfo(point, index, movementSegments) {
   ].join('');
 }
 
+function markerPointNode(marker) {
+  const el = marker.getElement?.();
+  if (!el) return null;
+  if (el.classList?.contains('point-marker')) return el;
+  return el.querySelector?.('.point-marker') || el.firstChild;
+}
+
 function selectMarker(marker, point) {
   if (appState.selectedMarker) {
-    const oldNode = appState.selectedMarker.getElement()?.firstChild;
+    const oldNode = markerPointNode(appState.selectedMarker);
     if (oldNode) {
       oldNode.classList.remove('selected-marker');
     }
   }
   appState.selectedMarker = marker;
-  const node = marker.getElement()?.firstChild;
+  const node = markerPointNode(marker);
   if (node) {
     node.classList.add('selected-marker');
   }
 
-  marker.bindPopup(`<strong>${point.time.toISOString()}</strong><br>${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}`).openPopup();
+  const html = `<strong>${point.time.toISOString()}</strong><br>${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}`;
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    if (appState.glPopup) appState.glPopup.remove();
+    appState.glPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '240px', offset: 12 })
+      .setLngLat([point.lon, point.lat])
+      .setHTML(html)
+      .addTo(appState.glMap);
+  } else if (marker.bindPopup) {
+    marker.bindPopup(html).openPopup();
+  }
 }
 
 function renderStats(rawPoints, optimizedPoints) {
@@ -2201,6 +2784,27 @@ function escapeXml(text) {
 }
 
 async function copyMapToClipboard() {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    try {
+      const canvas = appState.glMap.getCanvas();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) {
+        setStatus('Map capture failed.');
+        return;
+      }
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      setStatus(`Map view copied to clipboard (${canvas.width}×${canvas.height}px).`);
+    } catch (err) {
+      setStatus(`Copy failed: ${err.message}`);
+    }
+    return;
+  }
+
+  if (!appState.map) {
+    setStatus('Nothing to capture: map not ready.');
+    return;
+  }
+
   const mapContainer = appState.map.getContainer();
 
   // Hide point markers and empty-state overlay

@@ -10,7 +10,7 @@ Web app for viewing and editing GPS tracks from GPX, KML, and Polarsteps JSON.
   - GPX (`.gpx`)
   - KML (`.kml`)
   - Polarsteps JSON (`.json`)
-- Display track on OpenStreetMap (Leaflet)
+- Display track on OpenStreetMap (Leaflet) or a 3D Globe (MapLibre GL)
 - Right panel with:
   - Statistics
   - Point details (click point)
@@ -28,7 +28,7 @@ Web app for viewing and editing GPS tracks from GPX, KML, and Polarsteps JSON.
   - Drag point marker to move point
   - Click line segment to insert point
 - Export optimized track to GPX
-- Settings dialog to tune thresholds live
+- Settings dialog to tune thresholds live (including map source / 3D Globe)
 - About dialog
 
 ## Project Structure
@@ -36,7 +36,7 @@ Web app for viewing and editing GPS tracks from GPX, KML, and Polarsteps JSON.
 - [src/template.html](src/template.html) — app HTML shell
 - [src/styles.css](src/styles.css) — UI styles
 - [src/main.js](src/main.js) — import, optimize, render, edit, export logic
-- [build.js](build.js) — inlines assets (Leaflet + app code) into one HTML file
+- [build.js](build.js) — inlines assets (Leaflet + MapLibre + app code) into one HTML file
 - [Makefile](Makefile) — helper build commands
 - [index.html](index.html) — generated output (root)
 - [dist/index.html](dist/index.html) — generated output (dist)

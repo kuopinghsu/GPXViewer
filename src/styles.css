@@ -362,6 +362,10 @@ button:disabled {
   height: 100%;
 }
 
+#map {
+  background: hsl(0, 0%, 2%);
+}
+
 .map-wrap {
   flex: 1;
   min-width: 0;
@@ -381,6 +385,11 @@ button:disabled {
   pointer-events: none;
   text-align: center;
   padding: 24px;
+}
+
+/* Author display:flex overrides the UA [hidden] { display:none } rule. */
+.map-empty-state[hidden] {
+  display: none !important;
 }
 
 .map-empty-title {
@@ -1033,6 +1042,62 @@ button:disabled {
 .leaflet-bar {
   border: 1px solid var(--border-primary) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAPLIBRE / GLOBE OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+
+.maplibregl-map {
+  font: inherit;
+}
+
+.maplibregl-ctrl-group {
+  background: var(--bg-panel-solid) !important;
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.maplibregl-ctrl-group button {
+  background-color: transparent !important;
+  border-color: var(--border-secondary) !important;
+}
+
+.maplibregl-ctrl-group button + button {
+  border-top-color: var(--border-secondary) !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background-color: var(--hover-btn) !important;
+}
+
+.maplibregl-ctrl-attrib {
+  background: var(--bg-panel) !important;
+  color: var(--text-muted) !important;
+  font-size: 10px !important;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--text-secondary) !important;
+}
+
+.maplibregl-popup-content {
+  background: var(--bg-panel-solid) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  padding: 10px 12px !important;
+}
+
+.maplibregl-popup-tip {
+  border-top-color: var(--bg-panel-solid) !important;
+  border-bottom-color: var(--bg-panel-solid) !important;
+}
+
+.maplibregl-marker .point-marker,
+.maplibregl-marker .transport-icon {
+  cursor: pointer;
 }
 
 /* ═══════════════════════════════════════════════════════════════
