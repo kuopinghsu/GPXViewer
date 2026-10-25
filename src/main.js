@@ -1652,29 +1652,34 @@ function parseGpx(xmlText) {
   const creator = xml.querySelector('gpx')?.getAttribute('creator') ?? '';
 
   const trkpts = Array.from(xml.querySelectorAll('trkpt'));
-  const points = trkpts
+  const candidates = trkpts
     .map((node, index) => {
       const lat = Number(node.getAttribute('lat'));
       const lon = Number(node.getAttribute('lon'));
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        return null;
+      }
       const ele = Number(node.querySelector('ele')?.textContent ?? 0);
       const timeText = node.querySelector('time')?.textContent;
       const time = timeText ? new Date(timeText) : null;
-      if (!Number.isFinite(lat) || !Number.isFinite(lon) || !time || Number.isNaN(time.getTime())) {
-        return null;
-      }
       return {
         id: index,
         lat,
         lon,
-        ele,
-        time,
+        ele: Number.isFinite(ele) ? ele : 0,
+        time: time && !Number.isNaN(time.getTime()) ? time : null,
         isDwell: false,
         dwellMs: 0,
         speedKmh: 0
       };
     })
-    .filter(Boolean)
-    .sort((a, b) => a.time - b.time);
+    .filter(Boolean);
+
+  // GPX without any timestamps: assign synthetic 1-minute intervals from epoch 0 in file order
+  const hasAnyTime = candidates.some((p) => p.time);
+  const points = hasAnyTime
+    ? candidates.filter((p) => p.time).sort((a, b) => a.time - b.time)
+    : candidates.map((p, i) => ({ ...p, time: new Date(i * 60000) }));
 
   const settingsNode = xml.querySelector('metadata > extensions > gpxviewer-settings');
   let embeddedSettings = null;
