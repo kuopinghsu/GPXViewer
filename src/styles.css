@@ -1006,7 +1006,7 @@ button.toolbar-toggle-active {
    ═══════════════════════════════════════════════════════════════ */
 
 .about-card {
-  width: min(430px, 96vw);
+  width: min(520px, 96vw);
 }
 
 .about-header {
@@ -1078,6 +1078,45 @@ button.toolbar-toggle-active {
 .about-value {
   color: var(--text-primary);
   font-size: 12px;
+}
+
+.about-steps,
+.about-notes {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.about-steps {
+  margin-bottom: 8px;
+}
+
+.about-steps li + li,
+.about-notes li + li {
+  margin-top: 4px;
+}
+
+.about-notes {
+  color: var(--text-secondary);
+  list-style: disc;
+}
+
+.about-steps kbd,
+.about-notes kbd,
+.about-value kbd {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.about-footer {
+  justify-content: space-between;
 }
 
 /* ═══════════════════════════════════════════════════════════════

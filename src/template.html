@@ -68,9 +68,9 @@
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zM11.5 12a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-1.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
           Settings
         </button>
-        <button id="aboutBtn" class="toolbar-overflow-item" type="button">
+        <button id="aboutBtn" class="toolbar-overflow-item" type="button" title="Help (H)">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
-          About
+          Help
         </button>
         <div class="toolbar-more-wrap">
           <button id="toolbarMoreBtn" class="toolbar-more-btn" type="button" title="More actions" aria-expanded="false" aria-haspopup="true">
@@ -80,7 +80,7 @@
           <div id="toolbarMoreMenu" class="toolbar-more-menu" hidden role="menu">
             <button type="button" role="menuitem" data-more-action="exportKml">Export KML</button>
             <button type="button" role="menuitem" data-more-action="copyMap">Copy Map</button>
-            <button type="button" role="menuitem" data-more-action="about">About</button>
+            <button type="button" role="menuitem" data-more-action="about">Help</button>
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@
         <div id="map"></div>
         <div id="mapEmptyState" class="map-empty-state" aria-hidden="true">
           <div class="map-empty-title">No track loaded</div>
-          <div class="map-empty-body">Drag a file here, or use a button below.</div>
+          <div class="map-empty-body">Drag a file here, or use a button below. Press <strong>H</strong> for Help.</div>
           <div class="map-empty-actions">
             <button id="emptyOpenBtn" type="button" class="btn-primary">Open file</button>
             <button id="emptyDemoBtn" type="button">Try Demo</button>
@@ -274,7 +274,7 @@
   </div>
 
   <div id="aboutDialog" class="dialog-overlay" hidden>
-    <div class="dialog-card about-card" role="dialog" aria-modal="true" aria-label="About">
+    <div class="dialog-card about-card" role="dialog" aria-modal="true" aria-label="Help">
       <div class="about-header">
         <div class="about-icon" aria-hidden="true">
           <svg viewBox="0 0 32 32" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
@@ -283,36 +283,69 @@
             <circle cx="16" cy="9" r="2.2" fill="#FFC107"/>
           </svg>
         </div>
-        <div class="about-title">GPX/KML/Polarsteps Viewer</div>
-        <div class="about-subtitle">GPS track visualiser and editor</div>
+        <div class="about-title">Help</div>
+        <div class="about-subtitle">GPX / KML / Polarsteps track viewer &amp; editor</div>
       </div>
       <div class="about-separator"></div>
 
       <div class="dialog-body about-body">
         <div class="about-section">
-          <div class="about-section-title">Formats</div>
+          <div class="about-section-title">Load a track</div>
           <div class="about-grid">
-            <div class="about-key">Import</div><div class="about-value">GPX, KML, KMZ, Polarsteps JSON</div>
-            <div class="about-key">Export</div><div class="about-value">Optimized GPX</div>
+            <div class="about-key">Open</div><div class="about-value">Import .gpx, .kml, .kmz, or Polarsteps .json</div>
+            <div class="about-key">Demo</div><div class="about-value">Load the built-in sample track</div>
+            <div class="about-key">Drag &amp; drop</div><div class="about-value">Drop a file onto the map area</div>
           </div>
         </div>
 
         <div class="about-section">
-          <div class="about-section-title">Editing</div>
+          <div class="about-section-title">Single-point editing</div>
           <div class="about-grid">
-            <div class="about-key">Left-click segment</div><div class="about-value">Insert point</div>
-            <div class="about-key">Drag point</div><div class="about-value">Move point position</div>
-            <div class="about-key">Right-click point</div><div class="about-value">Open context menu to remove point</div>
-            <div class="about-key">Select region</div><div class="about-value">Drag a box to select points, then Remove / Delete</div>
+            <div class="about-key">Click point</div><div class="about-value">Show details in the side panel</div>
+            <div class="about-key">Drag point</div><div class="about-value">Move the point</div>
+            <div class="about-key">Click segment</div><div class="about-value">Insert a point on the track line</div>
+            <div class="about-key">Right-click</div><div class="about-value">Remove point (or hover + Delete)</div>
+          </div>
+        </div>
+
+        <div class="about-section">
+          <div class="about-section-title">Multi-point select &amp; delete</div>
+          <ol class="about-steps">
+            <li>Click <strong>Select</strong> (or press <kbd>R</kbd>).</li>
+            <li>Drag a box on the map over the points you want.</li>
+            <li>Selected points turn red; the HUD shows the count.</li>
+            <li>Click <strong>Remove</strong> or press <kbd>Delete</kbd> / <kbd>Backspace</kbd>, then confirm.</li>
+          </ol>
+          <ul class="about-notes">
+            <li>While Select is on, map pan is off so drag = box select.</li>
+            <li><kbd>Esc</kbd> exits Select mode and clears the selection.</li>
+            <li>At least 2 points must remain on the track.</li>
+          </ul>
+        </div>
+
+        <div class="about-section">
+          <div class="about-section-title">Map sources</div>
+          <div class="about-grid">
+            <div class="about-key">Quick switch</div><div class="about-value">Top-right dropdown on the map</div>
+            <div class="about-key">3D Globe</div><div class="about-value">MapLibre globe projection</div>
+            <div class="about-key">CARTO key</div><div class="about-value">Required for CARTO / Globe — set in Settings</div>
+          </div>
+        </div>
+
+        <div class="about-section">
+          <div class="about-section-title">Formats &amp; export</div>
+          <div class="about-grid">
+            <div class="about-key">Import</div><div class="about-value">GPX, KML, KMZ, Polarsteps JSON</div>
+            <div class="about-key">Export</div><div class="about-value">Optimized GPX or KML</div>
           </div>
         </div>
 
         <div class="about-section">
           <div class="about-section-title">Optimization</div>
           <div class="about-grid">
-            <div class="about-key">Speed filter</div><div class="about-value">Removes high-speed anomalies by threshold</div>
-            <div class="about-key">Cluster reduction</div><div class="about-value">Merges nearby stationary points into one center point</div>
-            <div class="about-key">Bezier processing</div><div class="about-value">Removes redundant points and fills long gaps</div>
+            <div class="about-key">Speed filter</div><div class="about-value">Removes high-speed anomalies</div>
+            <div class="about-key">Cluster reduction</div><div class="about-value">Merges nearby stationary points</div>
+            <div class="about-key">Bezier</div><div class="about-value">Drops redundant points / fills long gaps</div>
           </div>
         </div>
 
@@ -326,8 +359,9 @@
 
       <div class="about-separator"></div>
 
-      <div class="dialog-footer">
-        <button id="aboutCloseBtn" type="button">Close</button>
+      <div class="dialog-footer about-footer">
+        <button id="aboutShortcutsBtn" type="button">Shortcuts (?)</button>
+        <button id="aboutCloseBtn" type="button" class="btn-primary">Close</button>
       </div>
     </div>
   </div>
@@ -378,6 +412,7 @@
         </div>
         <div class="shortcut-group">
           <div class="shortcut-group-title">UI</div>
+          <div class="shortcut-row"><kbd>H</kbd><span>Open Help</span></div>
           <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
           <div class="shortcut-row"><kbd>P</kbd><span>Toggle side panel</span></div>
           <div class="shortcut-row"><kbd>Esc</kbd><span>Cancel select / close dialog</span></div>

@@ -156,6 +156,7 @@ const settingsCloseBtnEl = document.getElementById('settingsCloseBtn');
 const settingsCancelBtnEl = document.getElementById('settingsCancelBtn');
 const settingsSaveBtnEl = document.getElementById('settingsSaveBtn');
 const aboutCloseBtnEl = document.getElementById('aboutCloseBtn');
+const aboutShortcutsBtnEl = document.getElementById('aboutShortcutsBtn');
 const mapEmptyStateEl = document.getElementById('mapEmptyState');
 const panelCollapseBtnEl = document.getElementById('panelCollapseBtn');
 const copyMapBtnEl = document.getElementById('copyMapBtn');
@@ -759,6 +760,13 @@ function wireEvents() {
     });
   }
 
+  if (aboutShortcutsBtnEl) {
+    aboutShortcutsBtnEl.addEventListener('click', () => {
+      closeDialog(aboutDialogEl);
+      shortcutsDialogEl.hidden = false;
+    });
+  }
+
   settingsDialogEl.addEventListener('click', (event) => {
     if (event.target === settingsDialogEl) {
       closeDialog(settingsDialogEl);
@@ -854,6 +862,12 @@ function wireEvents() {
     }
 
     if (isInput) return;
+
+    if (event.key === 'h' || event.key === 'H') {
+      event.preventDefault();
+      openDialog(aboutDialogEl);
+      return;
+    }
 
     if (event.key === 'r' || event.key === 'R') {
       event.preventDefault();
@@ -3162,6 +3176,7 @@ function showPointInfo(point, index, movementSegments) {
 }
 
 function markerPointNode(marker) {
+  if (!marker) return null;
   const el = marker.getElement?.();
   if (!el) return null;
   if (el.classList?.contains('point-marker')) return el;

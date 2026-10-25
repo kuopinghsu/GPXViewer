@@ -8,7 +8,7 @@ const projectRoot = __dirname;
 const srcDir = path.join(projectRoot, 'src');
 const distDir = path.join(projectRoot, 'dist');
 const outFile = path.join(projectRoot, 'index.html');
-const outDistFile = path.join(distDir, 'index.html');
+const outDistFile = path.join(distDir, 'gpx.html');
 
 const LEAFLET_CSS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
 const LEAFLET_JS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
