@@ -40,11 +40,11 @@
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Export GPX
         </button>
-        <button id="exportKmlBtn" disabled title="Export edited track as KML">
+        <button id="exportKmlBtn" class="toolbar-overflow-item" disabled title="Export edited track as KML">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Export KML
         </button>
-        <button id="copyMapBtn" type="button" title="Copy map snapshot to clipboard">
+        <button id="copyMapBtn" class="toolbar-overflow-item" type="button" title="Copy map snapshot to clipboard">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.828 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
           Copy Map
         </button>
@@ -56,14 +56,33 @@
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
           Redo
         </button>
+        <button id="regionSelectBtn" type="button" title="Select region of points (R)" aria-pressed="false">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M1 1h5v1H2v4H1V1zm9 0h5v5h-1V2h-4V1zM1 10h1v4h4v1H1v-5zm13 0h1v5h-5v-1h4v-4z"/><path d="M4.5 4.5h7v7h-7z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          Select
+        </button>
+        <button id="removeSelectedBtn" type="button" disabled title="Remove selected points (Delete)">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+          Remove
+        </button>
         <button id="settingsBtn" type="button">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zM11.5 12a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-1.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
           Settings
         </button>
-        <button id="aboutBtn" type="button">
+        <button id="aboutBtn" class="toolbar-overflow-item" type="button">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
           About
         </button>
+        <div class="toolbar-more-wrap">
+          <button id="toolbarMoreBtn" class="toolbar-more-btn" type="button" title="More actions" aria-expanded="false" aria-haspopup="true">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+            More
+          </button>
+          <div id="toolbarMoreMenu" class="toolbar-more-menu" hidden role="menu">
+            <button type="button" role="menuitem" data-more-action="exportKml">Export KML</button>
+            <button type="button" role="menuitem" data-more-action="copyMap">Copy Map</button>
+            <button type="button" role="menuitem" data-more-action="about">About</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -72,7 +91,28 @@
         <div id="map"></div>
         <div id="mapEmptyState" class="map-empty-state" aria-hidden="true">
           <div class="map-empty-title">No track loaded</div>
-          <div class="map-empty-body">Drag a file here, click <strong>Open</strong>, or try the <strong>Demo</strong> track.</div>
+          <div class="map-empty-body">Drag a file here, or use a button below.</div>
+          <div class="map-empty-actions">
+            <button id="emptyOpenBtn" type="button" class="btn-primary">Open file</button>
+            <button id="emptyDemoBtn" type="button">Try Demo</button>
+          </div>
+        </div>
+        <div id="regionSelectHud" class="region-select-hud" hidden>
+          <span class="region-select-hud-hint">Drag to select</span>
+          <span id="regionSelectHudCount" class="region-select-hud-count">0 selected</span>
+          <kbd>Esc</kbd>
+        </div>
+        <div id="regionSelectBox" class="region-select-box" hidden></div>
+        <div class="map-source-control" title="Map source">
+          <label for="mapSourceQuick" class="visually-hidden">Map source</label>
+          <select id="mapSourceQuick" aria-label="Map source">
+            <option value="osm">OpenStreetMap</option>
+            <option value="carto-dark">CARTO Dark</option>
+            <option value="carto-voyager">CARTO Voyager</option>
+            <option value="carto-light">CARTO Light</option>
+            <option value="satellite">Satellite</option>
+            <option value="globe">3D Globe</option>
+          </select>
         </div>
 
         <!-- Scale Bar (bottom-left) -->
@@ -145,6 +185,7 @@
     <footer class="status-bar">
       <span id="statusBar">Open a GPX, KML, or Polarsteps JSON file to begin.</span>
     </footer>
+    <div id="toastHost" class="toast-host" aria-live="polite" aria-relevant="additions"></div>
   </div>
 
   <div id="pointContextMenu" class="context-menu" hidden>
@@ -214,6 +255,14 @@
               <option value="globe">3D Globe</option>
             </select>
           </label>
+          <div class="settings-row settings-row-api">
+            <span class="settings-label">CARTO API Key</span>
+            <div class="settings-api-controls">
+              <input id="settingCartoApiKey" type="password" autocomplete="new-password" spellcheck="false" placeholder="Enter key to set or replace" />
+              <button id="settingCartoApiKeyClearBtn" type="button" class="settings-api-clear" title="Clear saved CARTO API key">Clear</button>
+            </div>
+          </div>
+          <div id="settingCartoApiKeyHint" class="settings-hint">Required for CARTO / 3D Globe tiles. <a href="https://carto.com/basemaps/apikey/" target="_blank" rel="noopener noreferrer">Get a free key</a>. Stored encoded; never shown after save.</div>
         </div>
       </form>
       <div class="dialog-separator"></div>
@@ -254,6 +303,7 @@
             <div class="about-key">Left-click segment</div><div class="about-value">Insert point</div>
             <div class="about-key">Drag point</div><div class="about-value">Move point position</div>
             <div class="about-key">Right-click point</div><div class="about-value">Open context menu to remove point</div>
+            <div class="about-key">Select region</div><div class="about-value">Drag a box to select points, then Remove / Delete</div>
           </div>
         </div>
 
@@ -282,6 +332,23 @@
     </div>
   </div>
 
+  <div id="confirmDialog" class="dialog-overlay" hidden>
+    <div class="dialog-card confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="confirm-header">
+        <div id="confirmTitle" class="confirm-title">Confirm</div>
+      </div>
+      <div class="dialog-separator"></div>
+      <div class="dialog-body confirm-body">
+        <p id="confirmMessage">Are you sure?</p>
+      </div>
+      <div class="dialog-separator"></div>
+      <div class="dialog-footer">
+        <button id="confirmCancelBtn" type="button">Cancel</button>
+        <button id="confirmOkBtn" type="button" class="btn-primary btn-danger">Remove</button>
+      </div>
+    </div>
+  </div>
+
   <div id="shortcutsDialog" class="dialog-overlay" hidden>
     <div class="dialog-card shortcuts-card" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
       <div class="shortcuts-header">
@@ -306,13 +373,14 @@
         </div>
         <div class="shortcut-group">
           <div class="shortcut-group-title">Edit</div>
-          <div class="shortcut-row"><kbd>Del</kbd><span>Delete hovered point</span></div>
+          <div class="shortcut-row"><kbd>R</kbd><span>Toggle region select</span></div>
+          <div class="shortcut-row"><kbd>Del</kbd><span>Delete hovered / selected points</span></div>
         </div>
         <div class="shortcut-group">
           <div class="shortcut-group-title">UI</div>
           <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
           <div class="shortcut-row"><kbd>P</kbd><span>Toggle side panel</span></div>
-          <div class="shortcut-row"><kbd>Esc</kbd><span>Close dialog</span></div>
+          <div class="shortcut-row"><kbd>Esc</kbd><span>Cancel select / close dialog</span></div>
         </div>
       </div>
     </div>

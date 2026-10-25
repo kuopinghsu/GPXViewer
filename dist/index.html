@@ -955,6 +955,13 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button.toolbar-toggle-active {
+  background: var(--hover-btn-active);
+  border-color: var(--border-active);
+  color: var(--text-gold);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
 /* Theme toggle button */
 .theme-toggle {
   position: relative;
@@ -1087,6 +1094,17 @@ button:disabled {
 
 .map-empty-body strong {
   color: var(--text-gold);
+}
+
+.map-empty-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  pointer-events: auto;
+}
+
+.map-empty-actions button {
+  min-width: 110px;
 }
 
 .map-wrap.drag-over {
@@ -1423,6 +1441,49 @@ button:disabled {
   border-top: 1px solid var(--border-secondary);
 }
 
+.btn-danger,
+.btn-primary.btn-danger {
+  background: var(--alert-red);
+  border-color: var(--alert-red);
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled),
+.btn-primary.btn-danger:hover:not(:disabled) {
+  background: #e03535;
+  border-color: #e03535;
+  filter: none;
+  box-shadow: 0 0 12px rgba(255, 61, 61, 0.35);
+}
+
+.confirm-card {
+  width: min(380px, 92vw);
+}
+
+.confirm-header {
+  padding: 14px 16px 8px;
+}
+
+.confirm-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-heading);
+}
+
+.confirm-body {
+  padding: 8px 16px 14px;
+}
+
+.confirm-body p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 .btn-primary {
   background: var(--btn-primary-bg);
   border-color: var(--btn-primary-bg);
@@ -1513,6 +1574,58 @@ button:disabled {
   outline: 1px solid var(--gold-primary);
   border-color: var(--gold-primary);
   box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.settings-row-api {
+  grid-template-columns: 1fr minmax(160px, 1.8fr);
+  align-items: start;
+}
+
+.settings-api-controls {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.settings-api-controls input {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-api-clear {
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.settings-api-clear:hover {
+  color: var(--text-primary);
+  border-color: var(--border-active);
+  background: var(--hover-btn);
+}
+
+.settings-hint {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  margin-top: -2px;
+}
+
+.settings-hint a {
+  color: var(--text-cyan);
+  text-decoration: none;
+}
+
+.settings-hint a:hover {
+  text-decoration: underline;
 }
 
 .settings-card {
@@ -1662,6 +1775,72 @@ button:disabled {
 
 .selected-marker {
   background: var(--marker-selected-bg);
+}
+
+.region-selected-marker {
+  background: #ef4444 !important;
+  border-color: #fecaca !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
+}
+
+.region-select-box {
+  position: absolute;
+  z-index: 450;
+  border: 1.5px dashed var(--gold-primary);
+  background: rgba(212, 175, 55, 0.12);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.map-wrap.region-select-active #map,
+.map-wrap.region-select-active .maplibregl-canvas-container,
+.map-wrap.region-select-active .leaflet-container {
+  cursor: crosshair !important;
+}
+
+.region-select-hud {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 460;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-active);
+  background: var(--bg-panel-solid);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.region-select-hud[hidden] {
+  display: none !important;
+}
+
+.region-select-hud-hint {
+  color: var(--text-gold);
+  font-weight: 600;
+}
+
+.region-select-hud-count {
+  color: var(--text-secondary);
+}
+
+.region-select-hud kbd {
+  font-family: inherit;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
 }
 
 .transport-icon {
@@ -2075,6 +2254,14 @@ button:disabled {
 
 /* ── Tablet / vertical layout (≤ 900px) ── */
 @media (max-width: 900px) {
+  .toolbar-overflow-item {
+    display: none !important;
+  }
+
+  .toolbar-more-wrap {
+    display: inline-flex;
+  }
+
   .settings-grid {
     grid-template-columns: 1fr;
     padding-left: 0;
@@ -2201,6 +2388,190 @@ button:disabled {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   TOOLBAR MORE MENU
+   ═══════════════════════════════════════════════════════════════ */
+
+.toolbar-more-wrap {
+  display: none;
+  position: relative;
+  align-items: center;
+}
+
+.toolbar-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 600;
+  min-width: 148px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-panel-solid);
+  box-shadow: var(--dialog-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toolbar-more-menu[hidden] {
+  display: none !important;
+}
+
+.toolbar-more-menu button {
+  justify-content: flex-start;
+  width: 100%;
+  border: 1px solid transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAP SOURCE QUICK SWITCH
+   ═══════════════════════════════════════════════════════════════ */
+
+.map-source-control {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 400;
+}
+
+.map-source-control select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 32px;
+  padding: 4px 28px 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-panel-solid)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath fill='%239B978E' d='M4.5 6l3.5 3.5L11.5 6'/%3E%3C/svg%3E")
+    no-repeat right 8px center;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  max-width: 160px;
+  transition: border-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.map-source-control select:hover,
+.map-source-control select:focus {
+  border-color: var(--border-primary);
+  outline: none;
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOASTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.toast-host {
+  position: fixed;
+  left: 50%;
+  bottom: 36px;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  width: min(420px, calc(100vw - 24px));
+}
+
+.toast {
+  pointer-events: none;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-panel-solid);
+  box-shadow: var(--dialog-shadow);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: toast-in 0.22s ease forwards;
+}
+
+.toast.toast-out {
+  animation: toast-out 0.2s ease forwards;
+}
+
+.toast-success {
+  border-color: rgba(0, 230, 118, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 230, 118, 0.12);
+}
+
+.toast-warn {
+  border-color: rgba(255, 149, 0, 0.5);
+}
+
+.toast-error {
+  border-color: rgba(255, 61, 61, 0.5);
+}
+
+@keyframes toast-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   A11Y
+   ═══════════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible),
+.file-label:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+input:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .toast {
+    opacity: 1;
+    transform: none;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -2228,11 +2599,11 @@ button:disabled {
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Export GPX
         </button>
-        <button id="exportKmlBtn" disabled title="Export edited track as KML">
+        <button id="exportKmlBtn" class="toolbar-overflow-item" disabled title="Export edited track as KML">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
           Export KML
         </button>
-        <button id="copyMapBtn" type="button" title="Copy map snapshot to clipboard">
+        <button id="copyMapBtn" class="toolbar-overflow-item" type="button" title="Copy map snapshot to clipboard">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.828 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
           Copy Map
         </button>
@@ -2244,14 +2615,33 @@ button:disabled {
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
           Redo
         </button>
+        <button id="regionSelectBtn" type="button" title="Select region of points (R)" aria-pressed="false">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M1 1h5v1H2v4H1V1zm9 0h5v5h-1V2h-4V1zM1 10h1v4h4v1H1v-5zm13 0h1v5h-5v-1h4v-4z"/><path d="M4.5 4.5h7v7h-7z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          Select
+        </button>
+        <button id="removeSelectedBtn" type="button" disabled title="Remove selected points (Delete)">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+          Remove
+        </button>
         <button id="settingsBtn" type="button">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zM11.5 12a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-1.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
           Settings
         </button>
-        <button id="aboutBtn" type="button">
+        <button id="aboutBtn" class="toolbar-overflow-item" type="button">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
           About
         </button>
+        <div class="toolbar-more-wrap">
+          <button id="toolbarMoreBtn" class="toolbar-more-btn" type="button" title="More actions" aria-expanded="false" aria-haspopup="true">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+            More
+          </button>
+          <div id="toolbarMoreMenu" class="toolbar-more-menu" hidden role="menu">
+            <button type="button" role="menuitem" data-more-action="exportKml">Export KML</button>
+            <button type="button" role="menuitem" data-more-action="copyMap">Copy Map</button>
+            <button type="button" role="menuitem" data-more-action="about">About</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -2260,7 +2650,28 @@ button:disabled {
         <div id="map"></div>
         <div id="mapEmptyState" class="map-empty-state" aria-hidden="true">
           <div class="map-empty-title">No track loaded</div>
-          <div class="map-empty-body">Drag a file here, click <strong>Open</strong>, or try the <strong>Demo</strong> track.</div>
+          <div class="map-empty-body">Drag a file here, or use a button below.</div>
+          <div class="map-empty-actions">
+            <button id="emptyOpenBtn" type="button" class="btn-primary">Open file</button>
+            <button id="emptyDemoBtn" type="button">Try Demo</button>
+          </div>
+        </div>
+        <div id="regionSelectHud" class="region-select-hud" hidden>
+          <span class="region-select-hud-hint">Drag to select</span>
+          <span id="regionSelectHudCount" class="region-select-hud-count">0 selected</span>
+          <kbd>Esc</kbd>
+        </div>
+        <div id="regionSelectBox" class="region-select-box" hidden></div>
+        <div class="map-source-control" title="Map source">
+          <label for="mapSourceQuick" class="visually-hidden">Map source</label>
+          <select id="mapSourceQuick" aria-label="Map source">
+            <option value="osm">OpenStreetMap</option>
+            <option value="carto-dark">CARTO Dark</option>
+            <option value="carto-voyager">CARTO Voyager</option>
+            <option value="carto-light">CARTO Light</option>
+            <option value="satellite">Satellite</option>
+            <option value="globe">3D Globe</option>
+          </select>
         </div>
 
         <!-- Scale Bar (bottom-left) -->
@@ -2333,6 +2744,7 @@ button:disabled {
     <footer class="status-bar">
       <span id="statusBar">Open a GPX, KML, or Polarsteps JSON file to begin.</span>
     </footer>
+    <div id="toastHost" class="toast-host" aria-live="polite" aria-relevant="additions"></div>
   </div>
 
   <div id="pointContextMenu" class="context-menu" hidden>
@@ -2402,6 +2814,14 @@ button:disabled {
               <option value="globe">3D Globe</option>
             </select>
           </label>
+          <div class="settings-row settings-row-api">
+            <span class="settings-label">CARTO API Key</span>
+            <div class="settings-api-controls">
+              <input id="settingCartoApiKey" type="password" autocomplete="new-password" spellcheck="false" placeholder="Enter key to set or replace" />
+              <button id="settingCartoApiKeyClearBtn" type="button" class="settings-api-clear" title="Clear saved CARTO API key">Clear</button>
+            </div>
+          </div>
+          <div id="settingCartoApiKeyHint" class="settings-hint">Required for CARTO / 3D Globe tiles. <a href="https://carto.com/basemaps/apikey/" target="_blank" rel="noopener noreferrer">Get a free key</a>. Stored encoded; never shown after save.</div>
         </div>
       </form>
       <div class="dialog-separator"></div>
@@ -2442,6 +2862,7 @@ button:disabled {
             <div class="about-key">Left-click segment</div><div class="about-value">Insert point</div>
             <div class="about-key">Drag point</div><div class="about-value">Move point position</div>
             <div class="about-key">Right-click point</div><div class="about-value">Open context menu to remove point</div>
+            <div class="about-key">Select region</div><div class="about-value">Drag a box to select points, then Remove / Delete</div>
           </div>
         </div>
 
@@ -2470,6 +2891,23 @@ button:disabled {
     </div>
   </div>
 
+  <div id="confirmDialog" class="dialog-overlay" hidden>
+    <div class="dialog-card confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="confirm-header">
+        <div id="confirmTitle" class="confirm-title">Confirm</div>
+      </div>
+      <div class="dialog-separator"></div>
+      <div class="dialog-body confirm-body">
+        <p id="confirmMessage">Are you sure?</p>
+      </div>
+      <div class="dialog-separator"></div>
+      <div class="dialog-footer">
+        <button id="confirmCancelBtn" type="button">Cancel</button>
+        <button id="confirmOkBtn" type="button" class="btn-primary btn-danger">Remove</button>
+      </div>
+    </div>
+  </div>
+
   <div id="shortcutsDialog" class="dialog-overlay" hidden>
     <div class="dialog-card shortcuts-card" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
       <div class="shortcuts-header">
@@ -2494,13 +2932,14 @@ button:disabled {
         </div>
         <div class="shortcut-group">
           <div class="shortcut-group-title">Edit</div>
-          <div class="shortcut-row"><kbd>Del</kbd><span>Delete hovered point</span></div>
+          <div class="shortcut-row"><kbd>R</kbd><span>Toggle region select</span></div>
+          <div class="shortcut-row"><kbd>Del</kbd><span>Delete hovered / selected points</span></div>
         </div>
         <div class="shortcut-group">
           <div class="shortcut-group-title">UI</div>
           <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
           <div class="shortcut-row"><kbd>P</kbd><span>Toggle side panel</span></div>
-          <div class="shortcut-row"><kbd>Esc</kbd><span>Close dialog</span></div>
+          <div class="shortcut-row"><kbd>Esc</kbd><span>Cancel select / close dialog</span></div>
         </div>
       </div>
     </div>
@@ -2600,7 +3039,11 @@ const appState = {
   fileName: '',
   contextMenuPointIndex: -1,
   hoveredPointIndex: -1,
-  lonOffset: 0  // 360 when track crosses Pacific, 0 otherwise
+  lonOffset: 0,  // 360 when track crosses Pacific, 0 otherwise
+  regionSelectActive: false,
+  regionSelectedIndices: [],
+  regionDrag: null, // { startX, startY } in viewport coords while dragging
+  regionHighlightMarkers: []
 };
 
 const GL_TRACK_SOURCE = 'gpx-track';
@@ -2642,8 +3085,54 @@ const defaultSettings = {
   dwellMinMs: 3600000,
   flightDistanceKm: 600,
   flightSpeedKmh: 250,
-  mapSource: 'carto-dark'
+  mapSource: 'carto-dark',
+  cartoApiKeyEnc: '' // base64-encoded CARTO basemap API key; never shown in UI
 };
+
+function encodeCartoApiKey(plain) {
+  return btoa(unescape(encodeURIComponent(String(plain || '').trim())));
+}
+
+function decodeCartoApiKey(encoded) {
+  if (!encoded) return '';
+  try {
+    return decodeURIComponent(escape(atob(encoded)));
+  } catch {
+    return '';
+  }
+}
+
+function getCartoApiKey() {
+  return decodeCartoApiKey(settings.cartoApiKeyEnc);
+}
+
+function hasCartoApiKey() {
+  return Boolean(getCartoApiKey());
+}
+
+/** Stable fingerprint for style names — avoids embedding the raw key. */
+function cartoApiKeyStyleToken() {
+  const enc = settings.cartoApiKeyEnc || '';
+  if (!enc) return '';
+  let hash = 2166136261;
+  for (let i = 0; i < enc.length; i += 1) {
+    hash ^= enc.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `-k${(hash >>> 0).toString(36)}`;
+}
+
+function withCartoApiKey(url) {
+  const key = getCartoApiKey();
+  if (!key) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}key=${encodeURIComponent(key)}`;
+}
+
+function settingsForExport() {
+  const { cartoApiKeyEnc: _key, ...rest } = settings;
+  return rest;
+}
 
 function loadSettings() {
   try {
@@ -2699,7 +3188,28 @@ const settingDwellMinHoursEl = document.getElementById('settingDwellMinHours');
 const settingFlightDistanceKmEl = document.getElementById('settingFlightDistanceKm');
 const settingFlightSpeedKmhEl = document.getElementById('settingFlightSpeedKmh');
 const settingMapSourceEl = document.getElementById('settingMapSource');
+const settingCartoApiKeyEl = document.getElementById('settingCartoApiKey');
+const settingCartoApiKeyClearBtnEl = document.getElementById('settingCartoApiKeyClearBtn');
+const settingCartoApiKeyHintEl = document.getElementById('settingCartoApiKeyHint');
 const themeToggleBtnEl = document.getElementById('themeToggleBtn');
+const regionSelectBtnEl = document.getElementById('regionSelectBtn');
+const removeSelectedBtnEl = document.getElementById('removeSelectedBtn');
+const regionSelectBoxEl = document.getElementById('regionSelectBox');
+const regionSelectHudEl = document.getElementById('regionSelectHud');
+const regionSelectHudCountEl = document.getElementById('regionSelectHudCount');
+const toastHostEl = document.getElementById('toastHost');
+const emptyOpenBtnEl = document.getElementById('emptyOpenBtn');
+const emptyDemoBtnEl = document.getElementById('emptyDemoBtn');
+const toolbarMoreBtnEl = document.getElementById('toolbarMoreBtn');
+const toolbarMoreMenuEl = document.getElementById('toolbarMoreMenu');
+const mapSourceQuickEl = document.getElementById('mapSourceQuick');
+const confirmDialogEl = document.getElementById('confirmDialog');
+const confirmTitleEl = document.getElementById('confirmTitle');
+const confirmMessageEl = document.getElementById('confirmMessage');
+const confirmCancelBtnEl = document.getElementById('confirmCancelBtn');
+const confirmOkBtnEl = document.getElementById('confirmOkBtn');
+let clearCartoApiKeyOnSave = false;
+let confirmDialogResolver = null;
 const scaleBarEl = document.getElementById('scaleBar');
 const scaleBarLabelEl = document.getElementById('scaleBarLabel');
 const viewPresetsEl = document.getElementById('viewPresets');
@@ -2756,6 +3266,86 @@ if (window.matchMedia('(max-width: 900px)').matches) {
 
 function isGlobeSource(mapSource) {
   return mapSource === 'globe';
+}
+
+function usesCartoTiles(mapSource) {
+  return mapSource === 'globe'
+    || mapSource === 'carto-dark'
+    || mapSource === 'carto-voyager'
+    || mapSource === 'carto-light';
+}
+
+function showToast(message, { tone = 'info', durationMs = 2500 } = {}) {
+  if (!toastHostEl || !message) return;
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${tone}`;
+  toast.setAttribute('role', 'status');
+  toast.textContent = message;
+  toastHostEl.appendChild(toast);
+  window.setTimeout(() => {
+    toast.classList.add('toast-out');
+    window.setTimeout(() => toast.remove(), 220);
+  }, durationMs);
+}
+
+function syncMapSourceControls(mapSource) {
+  const value = mapSource || settings.mapSource || 'carto-dark';
+  if (settingMapSourceEl) settingMapSourceEl.value = value;
+  if (mapSourceQuickEl) mapSourceQuickEl.value = value;
+}
+
+function applyMapSource(mapSource, { persist = true } = {}) {
+  const next = mapSource || 'carto-dark';
+  settings.mapSource = next;
+  if (persist) saveSettings();
+  syncMapSourceControls(next);
+  setTileLayer(next);
+  if (usesCartoTiles(next) && !hasCartoApiKey()) {
+    showToast('CARTO tiles need an API key — add one in Settings.', { tone: 'warn', durationMs: 3500 });
+  }
+}
+
+function updateRegionSelectHud() {
+  if (!regionSelectHudEl) return;
+  const active = appState.regionSelectActive;
+  regionSelectHudEl.hidden = !active;
+  if (!active) return;
+  const n = appState.regionSelectedIndices.length;
+  if (regionSelectHudCountEl) {
+    regionSelectHudCountEl.textContent = `${n} selected`;
+  }
+}
+
+function setToolbarMoreOpen(open) {
+  if (!toolbarMoreBtnEl || !toolbarMoreMenuEl) return;
+  toolbarMoreMenuEl.hidden = !open;
+  toolbarMoreBtnEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function closeToolbarMore() {
+  setToolbarMoreOpen(false);
+}
+
+function openConfirmDialog({ title, message, confirmLabel = 'Remove' }) {
+  return new Promise((resolve) => {
+    if (!confirmDialogEl) {
+      resolve(window.confirm(message));
+      return;
+    }
+    confirmDialogResolver = resolve;
+    if (confirmTitleEl) confirmTitleEl.textContent = title || 'Confirm';
+    if (confirmMessageEl) confirmMessageEl.textContent = message || 'Are you sure?';
+    if (confirmOkBtnEl) confirmOkBtnEl.textContent = confirmLabel;
+    openDialog(confirmDialogEl);
+    confirmOkBtnEl?.focus();
+  });
+}
+
+function resolveConfirmDialog(result) {
+  closeDialog(confirmDialogEl);
+  const resolve = confirmDialogResolver;
+  confirmDialogResolver = null;
+  if (resolve) resolve(Boolean(result));
 }
 
 function captureMapView() {
@@ -2842,16 +3432,18 @@ function unprojectContainerPoint(point) {
 function getGlobeRasterStyle() {
   const light = document.documentElement.getAttribute('data-theme') === 'light';
   const tiles = light
-    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+  // Fingerprint the key so replacing it forces a MapLibre style refresh.
+  const keyToken = cartoApiKeyStyleToken();
   return {
     version: 8,
-    name: light ? 'gpx-globe-light' : 'gpx-globe-dark',
+    name: `${light ? 'gpx-globe-light' : 'gpx-globe-dark'}${keyToken}`,
     glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
     sources: {
       'raster-tiles': {
         type: 'raster',
-        tiles: ['a', 'b', 'c', 'd'].map((s) => tiles.replace('{s}', s).replace('{r}', '')),
+        tiles: ['a', 'b', 'c', 'd'].map((s) => withCartoApiKey(tiles.replace('{s}', s))),
         tileSize: 256,
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -2893,6 +3485,7 @@ function destroyLeafletMap() {
     appState.map.off('mousemove', trackMouseMoveHandler);
     trackMouseMoveHandler = null;
   }
+  clearRegionHighlightMarkers();
   appState.map.remove();
   appState.map = null;
   appState.layers.track = null;
@@ -2905,6 +3498,7 @@ function destroyLeafletMap() {
 
 function destroyGlMap() {
   if (!appState.glMap) return;
+  clearRegionHighlightMarkers();
   clearGlOverlays();
   appState.glMap.remove();
   appState.glMap = null;
@@ -2962,6 +3556,7 @@ function initLeafletMap(view) {
   appState.layers.points = L.layerGroup().addTo(appState.map);
   appState.layers.transport = L.layerGroup().addTo(appState.map);
   bindLeafletMapChrome();
+  if (appState.regionSelectActive) setMapPanEnabled(false);
 }
 
 function initGlMap(view) {
@@ -2991,6 +3586,7 @@ function initGlMap(view) {
     }
   });
   bindGlMapChrome();
+  if (appState.regionSelectActive) setMapPanEnabled(false);
 }
 
 function ensureMapEngine(mapSource) {
@@ -3052,6 +3648,18 @@ function wireEvents() {
     loadDemoTrack();
   });
 
+  if (emptyOpenBtnEl) {
+    emptyOpenBtnEl.addEventListener('click', () => {
+      fileInputEl.click();
+    });
+  }
+
+  if (emptyDemoBtnEl) {
+    emptyDemoBtnEl.addEventListener('click', () => {
+      loadDemoTrack();
+    });
+  }
+
   exportBtnEl.addEventListener('click', () => {
     if (!appState.optimizedPoints.length) {
       return;
@@ -3065,6 +3673,45 @@ function wireEvents() {
     }
     exportKml(appState.optimizedPoints, appState.fileName);
   });
+
+  if (toolbarMoreBtnEl && toolbarMoreMenuEl) {
+    toolbarMoreBtnEl.addEventListener('click', (event) => {
+      event.stopPropagation();
+      setToolbarMoreOpen(toolbarMoreMenuEl.hidden);
+    });
+    toolbarMoreMenuEl.addEventListener('click', (event) => {
+      const action = event.target?.closest('[data-more-action]')?.dataset?.moreAction;
+      if (!action) return;
+      closeToolbarMore();
+      if (action === 'exportKml') exportKmlBtnEl.click();
+      else if (action === 'copyMap') copyMapBtnEl.click();
+      else if (action === 'about') aboutBtnEl.click();
+    });
+    document.addEventListener('click', (event) => {
+      if (!toolbarMoreMenuEl.hidden && !event.target.closest('.toolbar-more-wrap')) {
+        closeToolbarMore();
+      }
+    });
+  }
+
+  if (mapSourceQuickEl) {
+    mapSourceQuickEl.value = settings.mapSource || 'carto-dark';
+    mapSourceQuickEl.addEventListener('change', () => {
+      applyMapSource(mapSourceQuickEl.value);
+    });
+  }
+
+  if (confirmCancelBtnEl) {
+    confirmCancelBtnEl.addEventListener('click', () => resolveConfirmDialog(false));
+  }
+  if (confirmOkBtnEl) {
+    confirmOkBtnEl.addEventListener('click', () => resolveConfirmDialog(true));
+  }
+  if (confirmDialogEl) {
+    confirmDialogEl.addEventListener('click', (event) => {
+      if (event.target === confirmDialogEl) resolveConfirmDialog(false);
+    });
+  }
 
   searchGeminiBtnEl.addEventListener('click', () => {
     const idx = appState.contextMenuPointIndex;
@@ -3102,6 +3749,28 @@ function wireEvents() {
     saveSettingsFromForm();
   });
 
+  if (settingCartoApiKeyClearBtnEl) {
+    settingCartoApiKeyClearBtnEl.addEventListener('click', () => {
+      clearCartoApiKeyOnSave = true;
+      if (settingCartoApiKeyEl) {
+        settingCartoApiKeyEl.value = '';
+        settingCartoApiKeyEl.placeholder = 'Will clear on Save';
+        settingCartoApiKeyEl.focus();
+      }
+      if (settingCartoApiKeyHintEl) {
+        settingCartoApiKeyHintEl.textContent = 'Saved key will be removed when you click Save.';
+      }
+    });
+  }
+
+  if (settingCartoApiKeyEl) {
+    settingCartoApiKeyEl.addEventListener('input', () => {
+      if (settingCartoApiKeyEl.value.trim()) {
+        clearCartoApiKeyOnSave = false;
+      }
+    });
+  }
+
   if (aboutCloseBtnEl) {
     aboutCloseBtnEl.addEventListener('click', () => {
       closeDialog(aboutDialogEl);
@@ -3128,12 +3797,53 @@ function wireEvents() {
     redoEdit();
   });
 
+  if (regionSelectBtnEl) {
+    regionSelectBtnEl.addEventListener('click', () => {
+      toggleRegionSelectMode();
+    });
+  }
+
+  if (removeSelectedBtnEl) {
+    removeSelectedBtnEl.addEventListener('click', () => {
+      void removeSelectedPointsFromTrack();
+    });
+  }
+
+  mapWrapEl.addEventListener('mousedown', (event) => {
+    if (!appState.regionSelectActive || event.button !== 0) return;
+    if (event.target.closest(
+      'button, a, input, select, .search-bar, .view-presets, .scale-bar, .map-source-control, .region-select-hud, .maplibregl-ctrl, .leaflet-control, .leaflet-control-container'
+    )) return;
+    event.preventDefault();
+    hidePointContextMenu();
+    appState.regionDrag = { startX: event.clientX, startY: event.clientY };
+    updateRegionSelectBox(event.clientX, event.clientY, event.clientX, event.clientY);
+  });
+
+  window.addEventListener('mousemove', (event) => {
+    if (!appState.regionDrag) return;
+    updateRegionSelectBox(appState.regionDrag.startX, appState.regionDrag.startY, event.clientX, event.clientY);
+  });
+
+  window.addEventListener('mouseup', (event) => {
+    if (!appState.regionDrag) return;
+    finishRegionSelectDrag(event.clientX, event.clientY);
+  });
+
   window.addEventListener('keydown', (event) => {
     // Ignore shortcuts when typing in inputs
     const tag = (event.target)?.tagName;
     const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 
     if (event.key === 'Escape') {
+      if (confirmDialogEl && !confirmDialogEl.hidden) {
+        resolveConfirmDialog(false);
+        return;
+      }
+      closeToolbarMore();
+      if (appState.regionSelectActive) {
+        setRegionSelectMode(false);
+      }
       closeDialog(settingsDialogEl);
       closeDialog(aboutDialogEl);
       shortcutsDialogEl.hidden = true;
@@ -3163,11 +3873,25 @@ function wireEvents() {
 
     if (isInput) return;
 
-    if ((event.key === 'Delete' || event.key === 'Backspace') && appState.hoveredPointIndex >= 0) {
+    if (event.key === 'r' || event.key === 'R') {
       event.preventDefault();
-      hidePointContextMenu();
-      removePointFromTrack(appState.hoveredPointIndex);
+      toggleRegionSelectMode();
       return;
+    }
+
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      if (appState.regionSelectedIndices.length) {
+        event.preventDefault();
+        hidePointContextMenu();
+        void removeSelectedPointsFromTrack();
+        return;
+      }
+      if (appState.hoveredPointIndex >= 0) {
+        event.preventDefault();
+        hidePointContextMenu();
+        removePointFromTrack(appState.hoveredPointIndex);
+        return;
+      }
     }
 
     if (event.key === '?') {
@@ -3456,22 +4180,31 @@ function setTileLayer(mapSource) {
     appState.map.removeLayer(appState.layers.baseTile);
   }
 
+  const cartoAttribution =
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+  const cartoOptions = {
+    maxZoom: 19,
+    subdomains: 'abcd',
+    attribution: cartoAttribution,
+    crossOrigin: 'anonymous'
+  };
+
   const sources = {
     'osm': {
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       options: { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', crossOrigin: 'anonymous' }
     },
     'carto-dark': {
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+      url: withCartoApiKey('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'),
+      options: cartoOptions
     },
     'carto-voyager': {
-      url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+      url: withCartoApiKey('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'),
+      options: cartoOptions
     },
     'carto-light': {
-      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-      options: { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>', crossOrigin: 'anonymous' }
+      url: withCartoApiKey('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'),
+      options: cartoOptions
     },
     'satellite': {
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -3487,6 +4220,16 @@ function setTileLayer(mapSource) {
   }
 }
 
+function updateCartoApiKeyHint() {
+  if (!settingCartoApiKeyHintEl) return;
+  const link = '<a href="https://carto.com/basemaps/apikey/" target="_blank" rel="noopener noreferrer">Get a free key</a>';
+  if (hasCartoApiKey()) {
+    settingCartoApiKeyHintEl.innerHTML = `Key saved (encoded). Leave blank to keep it, or enter a new key to replace. ${link}.`;
+  } else {
+    settingCartoApiKeyHintEl.innerHTML = `Required for CARTO / 3D Globe tiles. ${link}. Stored encoded; never shown after save.`;
+  }
+}
+
 function populateSettingsForm() {
   settingMaxAllowedSpeedKmhEl.value = settings.maxAllowedSpeedKmh;
   settingStationaryRadiusMetersEl.value = settings.stationaryRadiusMeters;
@@ -3498,6 +4241,16 @@ function populateSettingsForm() {
   settingFlightDistanceKmEl.value = settings.flightDistanceKm;
   settingFlightSpeedKmhEl.value = settings.flightSpeedKmh;
   settingMapSourceEl.value = settings.mapSource || 'carto-dark';
+  syncMapSourceControls(settings.mapSource || 'carto-dark');
+  // Never reveal the saved key — keep the field empty.
+  if (settingCartoApiKeyEl) {
+    settingCartoApiKeyEl.value = '';
+    settingCartoApiKeyEl.placeholder = hasCartoApiKey()
+      ? 'Key saved — enter new key to replace'
+      : 'Enter key to set or replace';
+  }
+  clearCartoApiKeyOnSave = false;
+  updateCartoApiKeyHint();
 }
 
 function saveSettingsFromForm() {
@@ -3521,10 +4274,30 @@ function saveSettingsFromForm() {
     return;
   }
 
+  const typedKey = settingCartoApiKeyEl?.value?.trim() || '';
+  if (clearCartoApiKeyOnSave && !typedKey) {
+    nextSettings.cartoApiKeyEnc = '';
+  } else if (typedKey) {
+    nextSettings.cartoApiKeyEnc = encodeCartoApiKey(typedKey);
+  }
+
+  const prevKeyEnc = settings.cartoApiKeyEnc || '';
   settings = { ...settings, ...nextSettings };
+  clearCartoApiKeyOnSave = false;
+  if (settingCartoApiKeyEl) settingCartoApiKeyEl.value = '';
   saveSettings();
+  syncMapSourceControls(settings.mapSource);
   setTileLayer(settings.mapSource);
   closeDialog(settingsDialogEl);
+
+  const keyChanged = (settings.cartoApiKeyEnc || '') !== prevKeyEnc;
+  if (keyChanged) {
+    if (!settings.cartoApiKeyEnc) {
+      showToast('CARTO API key cleared.', { tone: 'warn' });
+    } else {
+      showToast('CARTO API key saved.', { tone: 'success' });
+    }
+  }
 
   if (appState.rawPoints.length >= 2) {
     const optimized = optimizePoints(appState.rawPoints);
@@ -3537,11 +4310,13 @@ function saveSettingsFromForm() {
       renderTrack(optimized, { preserveView: true });
       renderStats(appState.rawPoints, optimized);
       setStatus('Settings saved and track re-optimized.');
+      showToast('Settings saved and track re-optimized.', { tone: 'success' });
       return;
     }
   }
 
   setStatus('Settings saved.');
+  showToast('Settings saved.', { tone: 'success' });
 }
 
 async function handleImport(file) {
@@ -3619,9 +4394,12 @@ function applyImportedTrack({ rawPoints, skipOptimize, embeddedSettings }, fileN
   }
 
   if (embeddedSettings) {
-    settings = { ...settings, ...embeddedSettings };
+    // Never import a CARTO API key from track files.
+    const { cartoApiKeyEnc: _ignoredKey, ...safeEmbedded } = embeddedSettings;
+    settings = { ...settings, ...safeEmbedded };
     saveSettings();
     populateSettingsForm();
+    setTileLayer(settings.mapSource);
   }
 
   const optimized = skipOptimize ? annotateSpeed(rawPoints) : optimizePoints(rawPoints);
@@ -4557,6 +5335,7 @@ function setGlTrackGeoJSON(geojson) {
 
 function handleGlMapClick(event) {
   if (!appState.optimizedPoints.length) return;
+  if (appState.regionSelectActive) return;
   const POINT_PROXIMITY_PX = getPointProximityPx();
   const nearIdx = findNearestPointInRadius(
     { lat: event.lngLat.lat, lng: event.lngLat.lng },
@@ -4577,6 +5356,7 @@ function handleGlMapClick(event) {
 
 function handleGlMapContextMenu(event) {
   if (!appState.optimizedPoints.length) return;
+  if (appState.regionSelectActive) return;
   const nearIdx = findNearestPointInRadius(
     { lat: event.lngLat.lat, lng: event.lngLat.lng },
     getPointProximityPx()
@@ -4586,9 +5366,15 @@ function handleGlMapContextMenu(event) {
   }
 }
 
+function restoreRegionSelectionHighlights() {
+  if (!appState.regionSelectedIndices.length) return;
+  highlightRegionSelection(appState.regionSelectedIndices.slice());
+}
+
 function renderPointMarkers(points) {
   if (appState.engine === 'maplibre') {
     renderGlPointMarkers(points);
+    restoreRegionSelectionHighlights();
     return;
   }
 
@@ -4626,12 +5412,14 @@ function renderPointMarkers(points) {
     });
 
     marker.on('click', () => {
+      if (appState.regionSelectActive) return;
       hidePointContextMenu();
       selectMarker(marker, point);
       showPointInfo(point, index, appState.movementSegments);
     });
 
     marker.on('contextmenu', (event) => {
+      if (appState.regionSelectActive) return;
       if (event.originalEvent) event.originalEvent.preventDefault();
       showPointContextMenu(event, index);
     });
@@ -4658,6 +5446,8 @@ function renderPointMarkers(points) {
     appState.pointMarkers[index] = marker;
     marker.addTo(appState.layers.points);
   });
+
+  restoreRegionSelectionHighlights();
 }
 
 function renderGlPointMarkers(points) {
@@ -4697,6 +5487,7 @@ function renderGlPointMarkers(points) {
 
     el.addEventListener('click', (event) => {
       event.stopPropagation();
+      if (appState.regionSelectActive) return;
       hidePointContextMenu();
       selectMarker(marker, point);
       showPointInfo(point, index, appState.movementSegments);
@@ -4704,6 +5495,7 @@ function renderGlPointMarkers(points) {
     el.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      if (appState.regionSelectActive) return;
       showPointContextMenu({ originalEvent: event }, index);
     });
     el.addEventListener('mouseenter', () => {
@@ -4750,6 +5542,9 @@ function renderTrack(points, options = {}) {
   const previousCenter = preserveView ? appState.map.getCenter() : null;
   const previousZoom = preserveView ? appState.map.getZoom() : null;
 
+  clearRegionHighlightMarkers();
+  appState.regionSelectedIndices = [];
+  updateRemoveSelectedButton();
   appState.hoveredPointIndex = -1;
   appState.layers.track.clearLayers();
   appState.layers.points.clearLayers();
@@ -4793,6 +5588,7 @@ function renderTrack(points, options = {}) {
     const trackLine = L.polyline(run.latlngs, polylineOptions).addTo(appState.layers.track);
 
     trackLine.on('click', (event) => {
+      if (appState.regionSelectActive) return;
       const nearIdx = findNearestPointInRadius(event.latlng, POINT_PROXIMITY_PX);
       if (nearIdx >= 0 && appState.pointMarkers[nearIdx]) {
         hidePointContextMenu();
@@ -4804,6 +5600,7 @@ function renderTrack(points, options = {}) {
     });
 
     trackLine.on('contextmenu', (event) => {
+      if (appState.regionSelectActive) return;
       if (event.originalEvent) {
         event.originalEvent.preventDefault();
       }
@@ -4860,6 +5657,9 @@ function renderGlTrack(points, options = {}) {
   if (!appState.glMap) return;
 
   const previousView = preserveView ? captureMapView() : null;
+  clearRegionHighlightMarkers();
+  appState.regionSelectedIndices = [];
+  updateRemoveSelectedButton();
   appState.hoveredPointIndex = -1;
 
   if (centerOnFirst) appState.lonOffset = computeLonOffset(points);
@@ -5083,6 +5883,244 @@ function hidePointContextMenu() {
   pointContextMenuEl.hidden = true;
 }
 
+function setMapPanEnabled(enabled) {
+  if (appState.engine === 'maplibre' && appState.glMap) {
+    if (enabled) {
+      appState.glMap.dragPan.enable();
+      if (appState.glMap.boxZoom) appState.glMap.boxZoom.enable();
+    } else {
+      appState.glMap.dragPan.disable();
+      if (appState.glMap.boxZoom) appState.glMap.boxZoom.disable();
+    }
+    return;
+  }
+  if (appState.map) {
+    if (enabled) {
+      appState.map.dragging.enable();
+      appState.map.boxZoom.enable();
+    } else {
+      appState.map.dragging.disable();
+      appState.map.boxZoom.disable();
+    }
+  }
+}
+
+function updateRemoveSelectedButton() {
+  if (!removeSelectedBtnEl) return;
+  removeSelectedBtnEl.disabled = appState.regionSelectedIndices.length === 0;
+}
+
+function clearRegionHighlightMarkers() {
+  appState.regionHighlightMarkers.forEach((marker) => {
+    if (marker?.remove) marker.remove();
+    else if (appState.layers?.points && marker) appState.layers.points.removeLayer(marker);
+  });
+  appState.regionHighlightMarkers = [];
+  appState.pointMarkers.forEach((marker) => {
+    const node = markerPointNode(marker);
+    if (node) node.classList.remove('region-selected-marker');
+  });
+}
+
+function clearRegionSelection({ keepMode = false } = {}) {
+  appState.regionSelectedIndices = [];
+  appState.regionDrag = null;
+  if (regionSelectBoxEl) {
+    regionSelectBoxEl.hidden = true;
+    regionSelectBoxEl.style.width = '0';
+    regionSelectBoxEl.style.height = '0';
+  }
+  clearRegionHighlightMarkers();
+  updateRemoveSelectedButton();
+  updateRegionSelectHud();
+  if (!keepMode && appState.regionSelectActive) {
+    // leave mode as-is unless caller exits mode
+  }
+}
+
+function setRegionSelectMode(active) {
+  appState.regionSelectActive = Boolean(active);
+  if (regionSelectBtnEl) {
+    regionSelectBtnEl.classList.toggle('toolbar-toggle-active', appState.regionSelectActive);
+    regionSelectBtnEl.setAttribute('aria-pressed', appState.regionSelectActive ? 'true' : 'false');
+  }
+  mapWrapEl.classList.toggle('region-select-active', appState.regionSelectActive);
+  setMapPanEnabled(!appState.regionSelectActive);
+
+  if (!appState.regionSelectActive) {
+    clearRegionSelection();
+    setStatus('Region select off.');
+  } else {
+    clearRegionSelection({ keepMode: true });
+    setStatus('Region select on: drag a box on the map, then Remove or press Delete.');
+  }
+  updateRegionSelectHud();
+}
+
+function toggleRegionSelectMode() {
+  if (!appState.optimizedPoints.length) {
+    setStatus('Load a track before selecting points.');
+    return;
+  }
+  setRegionSelectMode(!appState.regionSelectActive);
+}
+
+function clientToMapContainerPoint(clientX, clientY) {
+  const mapEl = document.getElementById('map');
+  if (!mapEl) return null;
+  const rect = mapEl.getBoundingClientRect();
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top,
+    mapRect: rect
+  };
+}
+
+function updateRegionSelectBox(startClientX, startClientY, clientX, clientY) {
+  if (!regionSelectBoxEl) return;
+  const wrapRect = mapWrapEl.getBoundingClientRect();
+  const left = Math.min(startClientX, clientX) - wrapRect.left;
+  const top = Math.min(startClientY, clientY) - wrapRect.top;
+  const width = Math.abs(clientX - startClientX);
+  const height = Math.abs(clientY - startClientY);
+  regionSelectBoxEl.hidden = false;
+  regionSelectBoxEl.style.left = `${left}px`;
+  regionSelectBoxEl.style.top = `${top}px`;
+  regionSelectBoxEl.style.width = `${width}px`;
+  regionSelectBoxEl.style.height = `${height}px`;
+}
+
+function findPointIndicesInMapRect(mapRect) {
+  const indices = [];
+  const points = appState.optimizedPoints;
+  for (let i = 0; i < points.length; i += 1) {
+    const p = points[i];
+    const pos = projectToContainerPoint(p.lat, pointDisplayLon(p));
+    if (
+      pos.x >= mapRect.left &&
+      pos.x <= mapRect.right &&
+      pos.y >= mapRect.top &&
+      pos.y <= mapRect.bottom
+    ) {
+      indices.push(i);
+    }
+  }
+  return indices;
+}
+
+function highlightRegionSelection(indices) {
+  clearRegionHighlightMarkers();
+  appState.regionSelectedIndices = indices.slice();
+  updateRemoveSelectedButton();
+  updateRegionSelectHud();
+
+  const selectedSet = new Set(indices);
+  appState.pointMarkers.forEach((marker, i) => {
+    if (!marker || !selectedSet.has(i)) return;
+    const node = markerPointNode(marker);
+    if (node) node.classList.add('region-selected-marker');
+  });
+
+  indices.forEach((index) => {
+    if (appState.pointMarkers[index]) return; // already highlighted via marker class
+    const point = appState.optimizedPoints[index];
+    if (!point) return;
+
+    if (appState.engine === 'maplibre' && appState.glMap) {
+      const el = document.createElement('div');
+      el.className = 'point-marker region-selected-marker';
+      el.style.width = '10px';
+      el.style.height = '10px';
+      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+        .setLngLat([point.lon, point.lat])
+        .addTo(appState.glMap);
+      appState.regionHighlightMarkers.push(marker);
+      return;
+    }
+
+    if (appState.map && appState.layers.points) {
+      const marker = L.marker([point.lat, displayLon(point)], {
+        interactive: false,
+        keyboard: false,
+        icon: L.divIcon({
+          className: '',
+          html: '<div class="point-marker region-selected-marker" style="width:10px;height:10px"></div>',
+          iconSize: [10, 10],
+          iconAnchor: [5, 5]
+        })
+      }).addTo(appState.layers.points);
+      appState.regionHighlightMarkers.push(marker);
+    }
+  });
+}
+
+function finishRegionSelectDrag(endClientX, endClientY) {
+  const drag = appState.regionDrag;
+  appState.regionDrag = null;
+  if (!drag) return;
+
+  if (regionSelectBoxEl) regionSelectBoxEl.hidden = true;
+
+  const start = clientToMapContainerPoint(drag.startX, drag.startY);
+  const end = clientToMapContainerPoint(endClientX, endClientY);
+  if (!start || !end) return;
+
+  const mapRect = {
+    left: Math.min(start.x, end.x),
+    right: Math.max(start.x, end.x),
+    top: Math.min(start.y, end.y),
+    bottom: Math.max(start.y, end.y)
+  };
+
+  if (mapRect.right - mapRect.left < 4 || mapRect.bottom - mapRect.top < 4) {
+    clearRegionSelection({ keepMode: true });
+    setStatus('Region too small — drag a larger box.');
+    return;
+  }
+
+  const indices = findPointIndicesInMapRect(mapRect);
+  highlightRegionSelection(indices);
+  if (!indices.length) {
+    setStatus('No points in selected region.');
+  } else {
+    setStatus(`${indices.length} point${indices.length === 1 ? '' : 's'} selected. Click Remove or press Delete.`);
+  }
+}
+
+async function removeSelectedPointsFromTrack() {
+  const indices = appState.regionSelectedIndices;
+  if (!indices.length) return;
+
+  const points = appState.optimizedPoints;
+  if (points.length - indices.length < 2) {
+    setStatus('Cannot remove selection: at least 2 points must remain.');
+    showToast('At least 2 points must remain.', { tone: 'warn' });
+    return;
+  }
+
+  const count = indices.length;
+  const confirmed = await openConfirmDialog({
+    title: 'Remove points',
+    message: `Remove ${count} selected point${count === 1 ? '' : 's'} from the track?`,
+    confirmLabel: 'Remove'
+  });
+  if (!confirmed) return;
+
+  const removeSet = new Set(indices);
+  pushHistory(points.slice());
+  const updated = points.filter((_, i) => !removeSet.has(i));
+  const reAnnotated = annotateSpeed(updated);
+
+  appState.optimizedPoints = reAnnotated;
+  clearRegionSelection({ keepMode: true });
+  renderTrack(reAnnotated, { preserveView: true });
+  renderStats(appState.rawPoints.length ? appState.rawPoints : reAnnotated, reAnnotated);
+  pointInfoEl.textContent = 'Points removed. Click a point on map to see GPS details.';
+  const msg = `Removed ${count} selected point${count === 1 ? '' : 's'}.`;
+  setStatus(msg);
+  showToast(msg, { tone: 'success' });
+}
+
 function removePointFromTrack(index) {
   if (!Number.isInteger(index) || index < 0 || index >= appState.optimizedPoints.length) {
     return;
@@ -5098,6 +6136,7 @@ function removePointFromTrack(index) {
   const reAnnotated = annotateSpeed(updated);
 
   appState.optimizedPoints = reAnnotated;
+  clearRegionSelection({ keepMode: true });
   renderTrack(reAnnotated, { preserveView: true });
   renderStats(appState.rawPoints.length ? appState.rawPoints : reAnnotated, reAnnotated);
   pointInfoEl.textContent = 'Point removed. Click a point on map to see GPS details.';
@@ -5199,7 +6238,7 @@ function serializeTrkpt(p) {
 
 function exportKml(points, sourceFileName) {
   const safeName = sourceFileName.replace(/\.[^.]+$/, '');
-  const settingsEncoded = btoa(JSON.stringify(settings));
+  const settingsEncoded = btoa(JSON.stringify(settingsForExport()));
   const whens = points.map((p) => `        <when>${p.time.toISOString()}</when>`).join('\n');
   const coords = points.map((p) => `        <gx:coord>${p.lon} ${p.lat} ${Number(p.ele || 0)}</gx:coord>`).join('\n');
   const kml = [
@@ -5230,11 +6269,13 @@ function exportKml(points, sourceFileName) {
   a.download = `${safeName}-optimized.kml`;
   a.click();
   URL.revokeObjectURL(url);
+  setStatus(`Exported ${safeName}-optimized.kml`);
+  showToast('KML exported.', { tone: 'success' });
 }
 
 function exportGpx(points, sourceFileName) {
   const safeName = sourceFileName.replace(/\.[^.]+$/, '');
-  const settingsEncoded = btoa(JSON.stringify(settings));
+  const settingsEncoded = btoa(JSON.stringify(settingsForExport()));
   const gpx = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<gpx version="1.1" creator="GPXViewer" xmlns="http://www.topografix.com/GPX/1/1">',
@@ -5259,6 +6300,8 @@ function exportGpx(points, sourceFileName) {
   a.download = `${safeName}-optimized.gpx`;
   a.click();
   URL.revokeObjectURL(url);
+  setStatus(`Exported ${safeName}-optimized.gpx`);
+  showToast('GPX exported.', { tone: 'success' });
 }
 
 function totalDistance(points) {
@@ -5369,12 +6412,15 @@ async function copyMapToClipboard() {
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) {
         setStatus('Map capture failed.');
+        showToast('Map capture failed.', { tone: 'error' });
         return;
       }
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       setStatus(`Map view copied to clipboard (${canvas.width}×${canvas.height}px).`);
+      showToast('Map copied to clipboard.', { tone: 'success' });
     } catch (err) {
       setStatus(`Copy failed: ${err.message}`);
+      showToast('Copy failed.', { tone: 'error' });
     }
     return;
   }
@@ -5451,13 +6497,16 @@ async function copyMapToClipboard() {
   composite.toBlob(async (blob) => {
     if (!blob) {
       setStatus('Map capture failed.');
+      showToast('Map capture failed.', { tone: 'error' });
       return;
     }
     try {
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       setStatus(`Map view copied to clipboard (${width}×${height}px).`);
+      showToast('Map copied to clipboard.', { tone: 'success' });
     } catch (err) {
       setStatus(`Copy failed: ${err.message}`);
+      showToast('Copy failed.', { tone: 'error' });
     }
   }, 'image/png');
 }
